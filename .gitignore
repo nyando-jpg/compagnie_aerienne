@@ -1,0 +1,52 @@
+# Java compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# Build directories
+build/
+target/
+dist/
+out/
+
+# IDE specific files
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Tomcat
+tomcat/
+
+# Database
+*.db
+*.sqlite
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# Do NOT ignore lib directory (we need it for JDBC driver)
+!lib/
+!lib/*.jar

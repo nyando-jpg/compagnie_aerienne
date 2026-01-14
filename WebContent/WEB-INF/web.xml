@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+    
+    <display-name>Compagnie Aerienne</display-name>
+    
+    <!-- Welcome file -->
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+    
+    <!-- Character Encoding Filter -->
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>util.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    <!-- Home Servlet -->
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>controller.HomeServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    
+    <!-- ClasseSiege Servlet -->
+    <servlet>
+        <servlet-name>ClasseSiegeServlet</servlet-name>
+        <servlet-class>controller.ClasseSiegeServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>ClasseSiegeServlet</servlet-name>
+        <url-pattern>/classe-siege</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Aeroport Servlet -->
+    <servlet>
+        <servlet-name>AeroportServlet</servlet-name>
+        <servlet-class>controller.AeroportServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>AeroportServlet</servlet-name>
+        <url-pattern>/aeroport</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Client Servlet -->
+    <servlet>
+        <servlet-name>ClientServlet</servlet-name>
+        <servlet-class>controller.ClientServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>ClientServlet</servlet-name>
+        <url-pattern>/client</url-pattern>
+    </servlet-mapping>
+    
+    <!-- LigneVol Servlet -->
+    <servlet>
+        <servlet-name>LigneVolServlet</servlet-name>
+        <servlet-class>controller.LigneVolServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>LigneVolServlet</servlet-name>
+        <url-pattern>/ligne-vol</url-pattern>
+    </servlet-mapping>
+    
+    <!-- VolOpere Servlet -->
+    <servlet>
+        <servlet-name>VolOpereServlet</servlet-name>
+        <servlet-class>controller.VolOpereServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>VolOpereServlet</servlet-name>
+        <url-pattern>/vol-opere</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Reservation Servlet -->
+    <servlet>
+        <servlet-name>ReservationServlet</servlet-name>
+        <servlet-class>controller.ReservationServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>ReservationServlet</servlet-name>
+        <url-pattern>/reservation</url-pattern>
+    </servlet-mapping>
+    
+    <!-- ChiffreAffaire Servlet -->
+    <servlet>
+        <servlet-name>ChiffreAffaireServlet</servlet-name>
+        <servlet-class>controller.ChiffreAffaireServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>ChiffreAffaireServlet</servlet-name>
+        <url-pattern>/chiffre-affaire</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Session Config -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+    
+    <!-- Error Pages -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/jsp/error.jsp</location>
+    </error-page>
+    
+    <error-page>
+        <error-code>500</error-code>
+        <location>/jsp/error.jsp</location>
+    </error-page>
+    
+</web-app>
