@@ -61,6 +61,28 @@
         <url-pattern>/aeroport</url-pattern>
     </servlet-mapping>
     
+    <!-- Avion Servlet -->
+    <servlet>
+        <servlet-name>AvionServlet</servlet-name>
+        <servlet-class>controller.AvionServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>AvionServlet</servlet-name>
+        <url-pattern>/avion</url-pattern>
+    </servlet-mapping>
+    
+    <!-- ModelAvion Servlet -->
+    <servlet>
+        <servlet-name>ModelAvionServlet</servlet-name>
+        <servlet-class>controller.ModelAvionServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>ModelAvionServlet</servlet-name>
+        <url-pattern>/modele</url-pattern>
+    </servlet-mapping>
+    
     <!-- Client Servlet -->
     <servlet>
         <servlet-name>ClientServlet</servlet-name>

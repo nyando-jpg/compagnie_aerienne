@@ -83,6 +83,14 @@
             <span class="menu-item-icon">🛫</span>
             <span class="menu-item-text">Aéroports</span>
         </a>
+        <a href="${pageContext.request.contextPath}/avion" class="menu-item">
+            <span class="menu-item-icon">🛩️</span>
+            <span class="menu-item-text">Avions</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/modele" class="menu-item">
+            <span class="menu-item-icon">🛫</span>
+            <span class="menu-item-text">Modèles d'avion</span>
+        </a>
         <a href="${pageContext.request.contextPath}/client" class="menu-item">
             <span class="menu-item-icon">👥</span>
             <span class="menu-item-text">Clients</span>
