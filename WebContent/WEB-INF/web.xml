@@ -138,6 +138,17 @@
         <url-pattern>/chiffre-affaire</url-pattern>
     </servlet-mapping>
     
+    <!-- MethodePaiement Servlet -->
+    <servlet>
+        <servlet-name>MethodePaiementServlet</servlet-name>
+        <servlet-class>controller.MethodePaiementServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>MethodePaiementServlet</servlet-name>
+        <url-pattern>/methode-paiement</url-pattern>
+    </servlet-mapping>
+    
     <!-- Session Config -->
     <session-config>
         <session-timeout>30</session-timeout>

@@ -107,6 +107,10 @@
             <span class="menu-item-icon">🎫</span>
             <span class="menu-item-text">Réservations</span>
         </a>
+        <a href="${pageContext.request.contextPath}/methode-paiement" class="menu-item">
+            <span class="menu-item-icon">💳</span>
+            <span class="menu-item-text">Méthodes de paiement</span>
+        </a>
         <a href="${pageContext.request.contextPath}/chiffre-affaire" class="menu-item">
             <span class="menu-item-icon">💰</span>
             <span class="menu-item-text">Chiffre d'affaires</span>
