@@ -20,6 +20,14 @@
         .paiement-PARTIEL { background: #fff3cd; color: #856404; }
         .paiement-PAYE { background: #d4edda; color: #155724; }
         .paiement-NON_DETERMINE { background: #e2e3e5; color: #383d41; }
+        
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .clickable-row:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +45,34 @@
             <% if (request.getAttribute("error") != null) { %>
                 <div class="message error">${error}</div>
             <% } %>
+            
+            <!-- Filtres -->
+            <div class="filter-panel">
+                <form method="get" action="${pageContext.request.contextPath}/paiement" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                    <div>
+                        <label for="numero_vol">Numéro Vol:</label>
+                        <input type="text" id="numero_vol" name="numero_vol" value="${numero_vol}" placeholder="Ex: AF123" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
+                    </div>
+                    <div>
+                        <label for="vol_opere_id">ID Vol Opéré:</label>
+                        <input type="number" id="vol_opere_id" name="vol_opere_id" value="${vol_opere_id}" placeholder="ID" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100px;" />
+                    </div>
+                    <div>
+                        <label for="statut_paiement">Statut Paiement:</label>
+                        <select id="statut_paiement" name="statut_paiement" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">Tous</option>
+                            <option value="NON_PAYE" ${statut_paiement == 'NON_PAYE' ? 'selected' : ''}>NON_PAYE</option>
+                            <option value="PARTIEL" ${statut_paiement == 'PARTIEL' ? 'selected' : ''}>PARTIEL</option>
+                            <option value="PAYE" ${statut_paiement == 'PAYE' ? 'selected' : ''}>PAYE</option>
+                            <option value="NON_DETERMINE" ${statut_paiement == 'NON_DETERMINE' ? 'selected' : ''}>NON_DETERMINE</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" style="padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 Filtrer</button>
+                        <a href="${pageContext.request.contextPath}/paiement" style="padding: 8px 16px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">🔄 Réinitialiser</a>
+                    </div>
+                </form>
+            </div>
             
             <%
                 List<Reservation> reservations = (List<Reservation>) request.getAttribute("reservations");
@@ -60,7 +96,7 @@
                     </thead>
                     <tbody>
                         <% for (Reservation r : reservations) { %>
-                            <tr>
+                            <tr class="clickable-row" onclick="window.location.href='${pageContext.request.contextPath}/paiement?action=details&reservation_id=<%= r.getId() %>'">
                                 <td><strong>#<%= r.getId() %></strong></td>
                                 <td><%= r.getClientFullName() %></td>
                                 <td><strong><%= r.getNumeroVol() %></strong></td>
@@ -75,7 +111,7 @@
                                         <%= sp %>
                                     </span>
                                 </td>
-                                <td>
+                                <td onclick="event.stopPropagation();">
                                     <a href="${pageContext.request.contextPath}/paiement?action=add&reservation_id=<%= r.getId() %>" class="btn-link">💵 Enregistrer un paiement</a>
                                 </td>
                             </tr>
