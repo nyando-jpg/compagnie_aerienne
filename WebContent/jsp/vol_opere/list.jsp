@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="model.VolOpere" %>
+<%@ page import="model.Avion" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -36,6 +37,7 @@
             </div>
         </div>
             
+            <% List<Avion> avions = (List<Avion>) request.getAttribute("avions"); %>
             <form method="get" class="search-form" style="margin: 20px 0;">
                 <input type="hidden" name="action" value="list">
                 
@@ -64,10 +66,23 @@
                 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
                     <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Avion (ID)</label>
-                        <input type="number" name="avion_id" placeholder="ID de l'avion..." 
-                               value="<%= request.getParameter("avion_id") != null ? request.getParameter("avion_id") : "" %>"
-                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" min="1">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Avion</label>
+                        <select name="avion_id" 
+                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="">Tous les avions</option>
+                            <% 
+                                String selectedAvion = request.getParameter("avion_id");
+                                if (avions != null) {
+                                    for (Avion av : avions) {
+                            %>
+                                <option value="<%= av.getId() %>" 
+                                    <%= selectedAvion != null && selectedAvion.equals(String.valueOf(av.getId())) ? "selected" : "" %>>
+                                    <%= av.getCodeAvion() != null ? av.getCodeAvion() : ("Avion #" + av.getId()) %>
+                                </option>
+                            <%      }
+                                }
+                            %>
+                        </select>
                     </div>
                     
                     <div>

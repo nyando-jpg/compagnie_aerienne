@@ -20,22 +20,22 @@
             <div class="stat-card">
                 <div class="stat-icon">💺</div>
                 <div class="stat-label">Classes</div>
-                <div class="stat-value">4</div>
+                <!-- <div class="stat-value">4</div> -->
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🛫</div>
                 <div class="stat-label">Aéroports</div>
-                <div class="stat-value">4</div>
+                <!-- <div class="stat-value">4</div> -->
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✈️</div>
                 <div class="stat-label">Vols actifs</div>
-                <div class="stat-value">4</div>
+                <!-- <div class="stat-value">4</div> -->
             </div>
             <div class="stat-card">
                 <div class="stat-icon">🎫</div>
                 <div class="stat-label">Réservations</div>
-                <div class="stat-value">4</div>
+                <!-- <div class="stat-value">4</div> -->
             </div>
         </div>
         

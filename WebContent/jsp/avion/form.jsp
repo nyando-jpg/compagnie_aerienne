@@ -50,12 +50,14 @@
                             name="model_avion_id" 
                             required>
                         <option value="">-- Sélectionnez un modèle --</option>
-                        <% for (ModelAvion modele : modeles) { %>
+                        <% if (modeles != null) {
+                            for (ModelAvion modele : modeles) { %>
                             <option value="<%= modele.getId() %>" 
                                     <%= isEdit && avion.getModelAvionId() == modele.getId() ? "selected" : "" %>>
                                 <%= modele.getDesignation() %> - <%= modele.getFabricant() %> (Capacité: <%= modele.getCapacite() %>)
                             </option>
-                        <% } %>
+                        <% }
+                        } %>
                     </select>
                     <small class="form-help">Choisissez le modèle d'avion dans la liste</small>
                 </div>

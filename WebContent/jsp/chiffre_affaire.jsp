@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List, java.util.Map, model.LigneVol, model.Reservation, model.VolOpere" %>
+<%@ page import="java.util.List, java.util.Map, model.LigneVol, model.Reservation, model.VolOpere, model.Avion" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -98,9 +98,11 @@
         <% 
             Map<String, Object> resultat = (Map<String, Object>) request.getAttribute("resultat");
             Map<String, Double> caParClasse = (Map<String, Double>) request.getAttribute("caParClasse");
+            Map<Integer, Double> prixMaxParVol = (Map<Integer, Double>) request.getAttribute("prixMaxParVol");
             List<LigneVol> lignes = (List<LigneVol>) request.getAttribute("lignes");
             List<Reservation> reservations = (List<Reservation>) request.getAttribute("reservations");
             List<VolOpere> volsOperes = (List<VolOpere>) request.getAttribute("volsOperes");
+            List<Avion> avions = (List<Avion>) request.getAttribute("avions");
             Map<String, Object> filtres = (Map<String, Object>) request.getAttribute("filtres");
         %>
         
@@ -125,9 +127,22 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="avion_id">Avion (ID)</label>
-                        <input type="number" id="avion_id" name="avion_id" min="1"
-                               value="<%= filtres.get("avionId") %>" placeholder="ID de l'avion">
+                        <label for="avion_id">Avion</label>
+                        <select id="avion_id" name="avion_id">
+                            <option value="">-- Tous les avions --</option>
+                            <% 
+                                if (avions != null) {
+                                    String avionFiltre = String.valueOf(filtres.get("avionId"));
+                                    for (Avion av : avions) { 
+                            %>
+                                <option value="<%= av.getId() %>" 
+                                    <%= String.valueOf(av.getId()).equals(avionFiltre) ? "selected" : "" %>>
+                                    <%= av.getCodeAvion() != null ? av.getCodeAvion() : ("Avion #" + av.getId()) %>
+                                </option>
+                            <%      }
+                                }
+                            %>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -199,6 +214,7 @@
                                 <th>Date Départ</th>
                                 <th>Statut</th>
                                 <th>Avion</th>
+                                <th>Prix Max Possible</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -213,6 +229,7 @@
                                         <%= vo.getStatus() != null ? vo.getStatus() : "N/A" %>
                                     </span></td>
                                     <td>#<%= vo.getAvionId() %></td>
+                                    <td><strong style="color: #667eea;"><%= String.format("%.2f €", prixMaxParVol.get(vo.getId())) %></strong></td>
                                 </tr>
                             <% } %>
                         </tbody>

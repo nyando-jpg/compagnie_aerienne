@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.VolOpere, model.LigneVol, java.util.List, java.util.Map" %>
+<%@ page import="model.VolOpere, model.LigneVol, model.ClasseSiege, model.Avion, java.util.List, java.util.Map" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
 <html lang="fr">
@@ -26,7 +26,9 @@
             <% 
                 VolOpere vo = (VolOpere) request.getAttribute("vol");
                 List<LigneVol> lignes = (List<LigneVol>) request.getAttribute("lignes");
+                List<ClasseSiege> classes = (List<ClasseSiege>) request.getAttribute("classes");
                 List<Map<String, Object>> statuses = (List<Map<String, Object>>) request.getAttribute("statuses");
+                List<Avion> avions = (List<Avion>) request.getAttribute("avions");
                 boolean isEdit = (vo != null);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
             %>
@@ -67,41 +69,43 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="avion_id">ID Avion * (temporaire)</label>
-                    <input type="number" id="avion_id" name="avion_id" 
-                           value="<%= isEdit ? vo.getAvionId() : "1" %>" 
-                           required min="1" placeholder="ID de l'avion">
+                    <label for="avion_id">Avion *</label>
+                    <select id="avion_id" name="avion_id" required>
+                        <option value="">-- Sélectionner un avion --</option>
+                        <% 
+                            if (avions != null) {
+                                for (Avion av : avions) {
+                        %>
+                            <option value="<%= av.getId() %>" 
+                                    <%= isEdit && vo.getAvionId() == av.getId() ? "selected" : "" %>>
+                                <%= av.getCodeAvion() != null ? av.getCodeAvion() : ("Avion #" + av.getId()) %>
+                            </option>
+                        <%      }
+                            }
+                        %>
+                    </select>
                 </div>
                 
                 <% if (!isEdit) { %>
                     <!-- Prix par classe (uniquement pour l'ajout) -->
                     <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">💰 Prix par Classe</h3>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="prix_economique">Prix Économique (€) *</label>
-                            <input type="number" id="prix_economique" name="prix_economique" 
-                                   step="0.01" min="0" value="500.00" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="prix_premium">Prix Premium (€) *</label>
-                            <input type="number" id="prix_premium" name="prix_premium" 
-                                   step="0.01" min="0" value="1200.00" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="prix_affaires">Prix Affaires (€) *</label>
-                            <input type="number" id="prix_affaires" name="prix_affaires" 
-                                   step="0.01" min="0" value="1800.00" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="prix_premiere">Prix Première (€) *</label>
-                            <input type="number" id="prix_premiere" name="prix_premiere" 
-                                   step="0.01" min="0" value="2500.00" required>
-                        </div>
+                        <% 
+                        if (classes != null) {
+                            for (ClasseSiege classe : classes) { 
+                        %>
+                            <div class="form-group">
+                                <label for="prix_<%= classe.getId() %>">Prix <%= classe.getLibelle() %> (€) *</label>
+                                <input type="number" id="prix_<%= classe.getId() %>" 
+                                       name="prix_<%= classe.getId() %>" 
+                                       step="0.01" min="0" 
+                                       value="<%= classe.getId() == 1 ? "500.00" : "2500.00" %>" 
+                                       required>
+                            </div>
+                        <% 
+                            }
+                        } 
+                        %>
                     </div>
                 <% } %>
                 

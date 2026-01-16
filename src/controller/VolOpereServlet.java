@@ -8,8 +8,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import dao.VolOpereDAO;
 import dao.LigneVolDAO;
 import dao.StatusVolDAO;
+import dao.ClasseSiegeDAO;
+import dao.AvionDAO;
 import model.VolOpere;
 import model.LigneVol;
+import model.ClasseSiege;
+import model.Avion;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -20,6 +24,8 @@ public class VolOpereServlet extends HttpServlet {
     private VolOpereDAO volOpereDAO;
     private LigneVolDAO ligneVolDAO;
     private StatusVolDAO statusVolDAO;
+    private ClasseSiegeDAO classeSiegeDAO;
+    private AvionDAO avionDAO;
     
     @Override
     public void init() throws ServletException {
@@ -27,6 +33,8 @@ public class VolOpereServlet extends HttpServlet {
         volOpereDAO = new VolOpereDAO();
         ligneVolDAO = new LigneVolDAO();
         statusVolDAO = new StatusVolDAO();
+        classeSiegeDAO = new ClasseSiegeDAO();
+        avionDAO = new AvionDAO();
     }
     
     @Override
@@ -102,8 +110,10 @@ public class VolOpereServlet extends HttpServlet {
         }
         
         List<VolOpere> vols = volOpereDAO.search(search, status, ligneVolId, avionId, dateDebut, dateFin);
+        List<Avion> avions = avionDAO.getAll();
         
         request.setAttribute("vols", vols);
+        request.setAttribute("avions", avions);
         request.getRequestDispatcher("/jsp/vol_opere/list.jsp").forward(request, response);
     }
     
@@ -111,8 +121,12 @@ public class VolOpereServlet extends HttpServlet {
             throws ServletException, IOException {
         List<LigneVol> lignes = ligneVolDAO.getAll();
         List<Map<String, Object>> statuses = statusVolDAO.getAll();
+        List<ClasseSiege> classes = classeSiegeDAO.getAll();
+        List<Avion> avions = avionDAO.getAll();
         request.setAttribute("lignes", lignes);
         request.setAttribute("statuses", statuses);
+        request.setAttribute("classes", classes);
+        request.setAttribute("avions", avions);
         request.getRequestDispatcher("/jsp/vol_opere/form.jsp").forward(request, response);
     }
     
@@ -122,9 +136,13 @@ public class VolOpereServlet extends HttpServlet {
         VolOpere vo = volOpereDAO.getById(id);
         List<LigneVol> lignes = ligneVolDAO.getAll();
         List<Map<String, Object>> statuses = statusVolDAO.getAll();
+        List<ClasseSiege> classes = classeSiegeDAO.getAll();
+        List<Avion> avions = avionDAO.getAll();
         request.setAttribute("vol", vo);
         request.setAttribute("lignes", lignes);
         request.setAttribute("statuses", statuses);
+        request.setAttribute("classes", classes);
+        request.setAttribute("avions", avions);
         request.getRequestDispatcher("/jsp/vol_opere/form.jsp").forward(request, response);
     }
     
@@ -136,12 +154,6 @@ public class VolOpereServlet extends HttpServlet {
             String dateDepart = request.getParameter("date_heure_depart");
             String dateArrivee = request.getParameter("date_heure_arrivee");
             
-            // Récupérer les prix pour chaque classe
-            double prixEconomique = Double.parseDouble(request.getParameter("prix_economique"));
-            double prixPremium = Double.parseDouble(request.getParameter("prix_premium"));
-            double prixAffaires = Double.parseDouble(request.getParameter("prix_affaires"));
-            double prixPremiere = Double.parseDouble(request.getParameter("prix_premiere"));
-            
             Timestamp tsDepart = Timestamp.valueOf(dateDepart.replace("T", " ") + ":00");
             Timestamp tsArrivee = Timestamp.valueOf(dateArrivee.replace("T", " ") + ":00");
             
@@ -149,20 +161,26 @@ public class VolOpereServlet extends HttpServlet {
             int volOpereId = volOpereDAO.insertAndGetId(vo);
             
             if (volOpereId > 0) {
-                // Insérer les prix pour toutes les classes
+                // Récupérer dynamiquement les prix pour chaque classe
+                List<ClasseSiege> classes = classeSiegeDAO.getAll();
                 java.util.Map<Integer, Double> prixParClasse = new java.util.HashMap<>();
-                prixParClasse.put(1, prixEconomique);  // ECONOMIQUE
-                prixParClasse.put(2, prixPremium);     // PREMIUM
-                prixParClasse.put(3, prixAffaires);    // AFFAIRES
-                prixParClasse.put(4, prixPremiere);    // PREMIERE
+                
+                for (ClasseSiege classe : classes) {
+                    String prixParam = request.getParameter("prix_" + classe.getId());
+                    if (prixParam != null && !prixParam.isEmpty()) {
+                        double prix = Double.parseDouble(prixParam);
+                        prixParClasse.put(classe.getId(), prix);
+                    }
+                }
                 
                 dao.PrixVolDAO prixVolDAO = new dao.PrixVolDAO();
                 int prixInseres = prixVolDAO.insertPrixPourVol(volOpereId, prixParClasse);
+                int nbClasses = classes.size();
                 
-                if (prixInseres == 4) {
+                if (prixInseres == nbClasses) {
                     request.setAttribute("message", "Vol opéré et prix ajoutés avec succès");
                 } else {
-                    request.setAttribute("message", "Vol opéré ajouté mais erreur sur les prix (" + prixInseres + "/4 insérés)");
+                    request.setAttribute("message", "Vol opéré ajouté mais erreur sur les prix (" + prixInseres + "/" + nbClasses + " insérés)");
                 }
             } else {
                 request.setAttribute("error", "Erreur lors de l'ajout du vol");

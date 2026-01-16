@@ -145,6 +145,42 @@ public class AvionDAO {
     }
     
     /**
+     * Get le prix total maximum qu'un avion peut générer pour un vol
+     * @param avionId ID de l'avion
+     * @param volOpereId ID du vol opéré
+     * @return prix total maximum
+     */
+    public double getPrixTotalMax(int avionId, int volOpereId) {
+        String sql = "SELECT SUM(pv.prix_base * siege_count.nb) AS prix_total_max " +
+                     "FROM prix_vol pv " +
+                     "JOIN ( " +
+                     "    SELECT classe_siege_id, COUNT(*) AS nb " +
+                     "    FROM siege " +
+                     "    WHERE avion_id = ? " +
+                     "    GROUP BY classe_siege_id " +
+                     ") siege_count ON pv.classe_siege_id = siege_count.classe_siege_id " +
+                     "WHERE pv.vol_opere_id = ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, avionId);
+            stmt.setInt(2, volOpereId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getDouble("prix_total_max");
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error in AvionDAO.getPrixTotalMax(): " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return 0.0;
+    }
+    
+    /**
      * Map ResultSet to Avion object
      */
     private Avion mapResultSetToAvion(ResultSet rs) throws SQLException {

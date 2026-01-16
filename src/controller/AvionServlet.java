@@ -14,6 +14,7 @@ import model.ClasseSiege;
 import model.ModelAvion;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 public class AvionServlet extends HttpServlet {
@@ -82,27 +83,64 @@ public class AvionServlet extends HttpServlet {
         try {
             List<ClasseSiege> classes = classeSiegeDAO.getAll();
             List<ModelAvion> modeles = modelAvionDAO.getAll();
+            
+            if (classes == null || classes.isEmpty()) {
+                throw new ServletException("Aucune classe de siège trouvée. Vérifiez la table classe_siege.");
+            }
+            if (modeles == null || modeles.isEmpty()) {
+                throw new ServletException("Aucun modèle d'avion trouvé. Vérifiez la table model_avion.");
+            }
+            
             request.setAttribute("classes", classes);
             request.setAttribute("modeles", modeles);
             request.getRequestDispatcher("/jsp/avion/form.jsp").forward(request, response);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new ServletException("Erreur SQL lors du chargement des données: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new ServletException("Error loading form data", e);
+            e.printStackTrace();
+            throw new ServletException("Erreur lors du chargement du formulaire: " + e.getMessage(), e);
         }
     }
     
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         try {
-            int id = Integer.parseInt(request.getParameter("id"));
+            String idParam = request.getParameter("id");
+            if (idParam == null || idParam.trim().isEmpty()) {
+                throw new ServletException("Paramètre 'id' manquant pour modifier un avion");
+            }
+            
+            int id = Integer.parseInt(idParam);
             Avion avion = dao.getById(id);
+            
+            if (avion == null) {
+                throw new ServletException("Avion introuvable avec l'ID: " + id);
+            }
+            
             List<ClasseSiege> classes = classeSiegeDAO.getAll();
             List<ModelAvion> modeles = modelAvionDAO.getAll();
+            
+            if (classes == null || classes.isEmpty()) {
+                throw new ServletException("Aucune classe de siège trouvée. Vérifiez la table classe_siege.");
+            }
+            if (modeles == null || modeles.isEmpty()) {
+                throw new ServletException("Aucun modèle d'avion trouvé. Vérifiez la table model_avion.");
+            }
+            
             request.setAttribute("avion", avion);
             request.setAttribute("classes", classes);
             request.setAttribute("modeles", modeles);
             request.getRequestDispatcher("/jsp/avion/form.jsp").forward(request, response);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new ServletException("Erreur SQL lors du chargement des données: " + e.getMessage(), e);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            throw new ServletException("ID d'avion invalide: " + request.getParameter("id"), e);
         } catch (Exception e) {
-            throw new ServletException("Error loading form data", e);
+            e.printStackTrace();
+            throw new ServletException("Erreur lors du chargement du formulaire: " + e.getMessage(), e);
         }
     }
     
