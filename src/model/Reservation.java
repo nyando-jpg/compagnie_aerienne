@@ -27,6 +27,10 @@ public class Reservation implements Serializable {
     private Timestamp dateHeureDepart;
     private String numeroSiege;
     private Double prix;
+    // Paiement
+    private Double montantTotal;
+    private Double montantPaye;
+    private String statutPaiement;
     
     public Reservation() {
     }
@@ -160,5 +164,29 @@ public class Reservation implements Serializable {
     
     public void setPrix(Double prix) {
         this.prix = prix;
+    }
+
+    public Double getMontantTotal() {
+        return montantTotal;
+    }
+
+    public void setMontantTotal(Double montantTotal) {
+        this.montantTotal = montantTotal;
+    }
+
+    public Double getMontantPaye() {
+        return montantPaye;
+    }
+
+    public void setMontantPaye(Double montantPaye) {
+        this.montantPaye = montantPaye;
+    }
+
+    public String getStatutPaiement() {
+        return statutPaiement;
+    }
+
+    public void setStatutPaiement(String statutPaiement) {
+        this.statutPaiement = statutPaiement;
     }
 }

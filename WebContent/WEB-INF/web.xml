@@ -138,6 +138,17 @@
         <url-pattern>/chiffre-affaire</url-pattern>
     </servlet-mapping>
     
+    <!-- Paiement Servlet -->
+    <servlet>
+        <servlet-name>PaiementServlet</servlet-name>
+        <servlet-class>controller.PaiementServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>PaiementServlet</servlet-name>
+        <url-pattern>/paiement</url-pattern>
+    </servlet-mapping>
+    
     <!-- MethodePaiement Servlet -->
     <servlet>
         <servlet-name>MethodePaiementServlet</servlet-name>
