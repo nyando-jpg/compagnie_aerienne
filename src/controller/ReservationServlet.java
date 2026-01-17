@@ -189,6 +189,7 @@ public class ReservationServlet extends HttpServlet {
             int volOpereId = Integer.parseInt(request.getParameter("vol_opere_id"));
             String statut = request.getParameter("statut");
             int siegeId = Integer.parseInt(request.getParameter("siege_vol_id"));
+            int typeClientId = Integer.parseInt(request.getParameter("type_client_id"));
             
             // 1. Créer réservation
             Reservation r = new Reservation(clientId, volOpereId, statut);
@@ -199,12 +200,14 @@ public class ReservationServlet extends HttpServlet {
                 SiegeVol siegeInfo = siegeVolDAO.getSiegeInfoById(siegeId);
                 VolOpere vol = volOpereDAO.getById(volOpereId);
                 
-                // 3. Calculer prix basé sur le vol opéré
+                // 3. Calculer prix basé sur le vol opéré, classe et type de client
                 PrixVolDAO prixVolDAO = new PrixVolDAO();
-                double prix = prixVolDAO.getPrix(volOpereId, siegeInfo.getClasseSiegeId());
+                double prix = prixVolDAO.getPrix(volOpereId, siegeInfo.getClasseSiegeId(), typeClientId);
+                
+                System.out.println("[DEBUG] ReservationServlet - Prix récupéré: " + prix);
                 
                 if (prix <= 0) {
-                    request.setAttribute("error", "Prix introuvable pour ce vol et classe");
+                    request.setAttribute("error", "Prix introuvable pour ce vol et classe. Assurez-vous que les prix ont été définis lors de la création du vol opéré. Consultez les logs Tomcat pour plus de détails.");
                     listReservations(request, response);
                     return;
                 }

@@ -10,10 +10,13 @@ import dao.LigneVolDAO;
 import dao.StatusVolDAO;
 import dao.ClasseSiegeDAO;
 import dao.AvionDAO;
+import dao.TypeClientDAO;
+import dao.PrixVolDAO;
 import model.VolOpere;
 import model.LigneVol;
 import model.ClasseSiege;
 import model.Avion;
+import model.TypeClient;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -26,6 +29,8 @@ public class VolOpereServlet extends HttpServlet {
     private StatusVolDAO statusVolDAO;
     private ClasseSiegeDAO classeSiegeDAO;
     private AvionDAO avionDAO;
+    private TypeClientDAO typeClientDAO;
+    private PrixVolDAO prixVolDAO;
     
     @Override
     public void init() throws ServletException {
@@ -35,6 +40,8 @@ public class VolOpereServlet extends HttpServlet {
         statusVolDAO = new StatusVolDAO();
         classeSiegeDAO = new ClasseSiegeDAO();
         avionDAO = new AvionDAO();
+        typeClientDAO = new TypeClientDAO();
+        prixVolDAO = new PrixVolDAO();
     }
     
     @Override
@@ -123,10 +130,12 @@ public class VolOpereServlet extends HttpServlet {
         List<Map<String, Object>> statuses = statusVolDAO.getAll();
         List<ClasseSiege> classes = classeSiegeDAO.getAll();
         List<Avion> avions = avionDAO.getAll();
+        List<TypeClient> typesClients = typeClientDAO.getAll();
         request.setAttribute("lignes", lignes);
         request.setAttribute("statuses", statuses);
         request.setAttribute("classes", classes);
         request.setAttribute("avions", avions);
+        request.setAttribute("typesClients", typesClients);
         request.getRequestDispatcher("/jsp/vol_opere/form.jsp").forward(request, response);
     }
     
@@ -138,11 +147,13 @@ public class VolOpereServlet extends HttpServlet {
         List<Map<String, Object>> statuses = statusVolDAO.getAll();
         List<ClasseSiege> classes = classeSiegeDAO.getAll();
         List<Avion> avions = avionDAO.getAll();
+        List<TypeClient> typesClients = typeClientDAO.getAll();
         request.setAttribute("vol", vo);
         request.setAttribute("lignes", lignes);
         request.setAttribute("statuses", statuses);
         request.setAttribute("classes", classes);
         request.setAttribute("avions", avions);
+        request.setAttribute("typesClients", typesClients);
         request.getRequestDispatcher("/jsp/vol_opere/form.jsp").forward(request, response);
     }
     
@@ -161,27 +172,40 @@ public class VolOpereServlet extends HttpServlet {
             int volOpereId = volOpereDAO.insertAndGetId(vo);
             
             if (volOpereId > 0) {
-                // Récupérer dynamiquement les prix pour chaque classe
+                // Récupérer les prix par classe et type de client
                 List<ClasseSiege> classes = classeSiegeDAO.getAll();
-                java.util.Map<Integer, Double> prixParClasse = new java.util.HashMap<>();
+                List<TypeClient> typesClients = typeClientDAO.getAll();
                 
-                for (ClasseSiege classe : classes) {
-                    String prixParam = request.getParameter("prix_" + classe.getId());
-                    if (prixParam != null && !prixParam.isEmpty()) {
-                        double prix = Double.parseDouble(prixParam);
-                        prixParClasse.put(classe.getId(), prix);
+                java.util.Map<String, Object> prixEtPourcentages = new java.util.HashMap<>();
+                
+                for (ClasseSiege cs : classes) {
+                    for (TypeClient tc : typesClients) {
+                        String key = cs.getId() + "_" + tc.getId();
+                        
+                        if ("POURCENTAGE".equals(tc.getModeCalcul())) {
+                            // Récupérer le pourcentage
+                            String paramName = "pourcent_classe_" + cs.getId() + "_type_" + tc.getId();
+                            String pourcentStr = request.getParameter(paramName);
+                            if (pourcentStr != null && !pourcentStr.isEmpty()) {
+                                double pourcent = Double.parseDouble(pourcentStr);
+                                prixEtPourcentages.put(key, pourcent);
+                            }
+                        } else {
+                            // Récupérer le prix fixe
+                            String paramName = "prix_classe_" + cs.getId() + "_type_" + tc.getId();
+                            String prixStr = request.getParameter(paramName);
+                            if (prixStr != null && !prixStr.isEmpty()) {
+                                double prix = Double.parseDouble(prixStr);
+                                prixEtPourcentages.put(key, prix);
+                            }
+                        }
                     }
                 }
                 
-                dao.PrixVolDAO prixVolDAO = new dao.PrixVolDAO();
-                int prixInseres = prixVolDAO.insertPrixPourVol(volOpereId, prixParClasse);
-                int nbClasses = classes.size();
+                // Insérer les prix et pourcentages
+                prixVolDAO.insertPrixPourVol(volOpereId, prixEtPourcentages);
                 
-                if (prixInseres == nbClasses) {
-                    request.setAttribute("message", "Vol opéré et prix ajoutés avec succès");
-                } else {
-                    request.setAttribute("message", "Vol opéré ajouté mais erreur sur les prix (" + prixInseres + "/" + nbClasses + " insérés)");
-                }
+                request.setAttribute("message", "Vol opéré et prix ajoutés avec succès");
             } else {
                 request.setAttribute("error", "Erreur lors de l'ajout du vol");
             }

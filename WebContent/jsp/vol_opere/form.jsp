@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.VolOpere, model.LigneVol, model.ClasseSiege, model.Avion, java.util.List, java.util.Map" %>
+<%@ page import="model.VolOpere, model.LigneVol, model.ClasseSiege, model.Avion, model.TypeClient, java.util.List, java.util.Map" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
 <html lang="fr">
@@ -13,6 +13,29 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+        }
+        .prix-grid {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        .prix-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .prix-table th,
+        .prix-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .prix-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .prix-table input {
+            width: 130px;
+            padding: 5px;
+            text-align: right;
         }
     </style>
 </head>
@@ -29,6 +52,7 @@
                 List<ClasseSiege> classes = (List<ClasseSiege>) request.getAttribute("classes");
                 List<Map<String, Object>> statuses = (List<Map<String, Object>>) request.getAttribute("statuses");
                 List<Avion> avions = (List<Avion>) request.getAttribute("avions");
+                List<TypeClient> typesClients = (List<TypeClient>) request.getAttribute("typesClients");
                 boolean isEdit = (vo != null);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
             %>
@@ -87,25 +111,81 @@
                 </div>
                 
                 <% if (!isEdit) { %>
-                    <!-- Prix par classe (uniquement pour l'ajout) -->
-                    <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">💰 Prix par Classe</h3>
-                    <div class="form-row">
-                        <% 
-                        if (classes != null) {
-                            for (ClasseSiege classe : classes) { 
-                        %>
-                            <div class="form-group">
-                                <label for="prix_<%= classe.getId() %>">Prix <%= classe.getLibelle() %> (€) *</label>
-                                <input type="number" id="prix_<%= classe.getId() %>" 
-                                       name="prix_<%= classe.getId() %>" 
-                                       step="0.01" min="0" 
-                                       value="<%= classe.getId() == 1 ? "500.00" : "2500.00" %>" 
-                                       required>
-                            </div>
-                        <% 
-                            }
-                        } 
-                        %>
+                    <!-- Prix par classe et type de client (uniquement pour l'ajout) -->
+                    <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">💰 Prix par Classe de Siège et Type de Client</h3>
+                    <p style="color: #666; margin-bottom: 15px;">
+                        Saisissez le <strong>prix fixe</strong> pour ADULTE et ENFANT, 
+                        ou le <strong>pourcentage du prix adulte</strong> pour BÉBÉ.
+                    </p>
+                    
+                    <div class="prix-grid">
+                        <table class="prix-table">
+                            <thead>
+                                <tr>
+                                    <th>Classe</th>
+                                    <% if (typesClients != null) {
+                                        for (TypeClient tc : typesClients) { %>
+                                            <th>
+                                                <%= tc.getLibelle() %>
+                                                <% if ("POURCENTAGE".equals(tc.getModeCalcul())) { %>
+                                                    <br><small style="color: #28a745;">(% du tarif adulte)</small>
+                                                <% } else { %>
+                                                    <br><small style="color: #666;">(Prix fixe)</small>
+                                                <% } %>
+                                            </th>
+                                    <%  }
+                                    } %>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% 
+                                if (classes != null && typesClients != null) {
+                                    for (ClasseSiege cs : classes) { 
+                                %>
+                                    <tr>
+                                        <td><strong><%= cs.getLibelle() %></strong></td>
+                                        <% for (TypeClient tc : typesClients) { %>
+                                            <td>
+                                                <% if ("POURCENTAGE".equals(tc.getModeCalcul())) { %>
+                                                    <!-- Input pour pourcentage -->
+                                                    <div style="display: flex; align-items: center; gap: 5px; justify-content: center;">
+                                                        <input type="number" 
+                                                               name="pourcent_classe_<%= cs.getId() %>_type_<%= tc.getId() %>" 
+                                                               step="0.01" 
+                                                               min="0"
+                                                               max="100"
+                                                               placeholder="Ex: 10"
+                                                               required
+                                                               style="width: 80px;">
+                                                        <span style="font-weight: bold; color: #28a745; font-size: 18px;">%</span>
+                                                    </div>
+                                                <% } else { %>
+                                                    <!-- Input pour prix fixe -->
+                                                    <input type="number" 
+                                                           name="prix_classe_<%= cs.getId() %>_type_<%= tc.getId() %>" 
+                                                           step="0.01" 
+                                                           min="0" 
+                                                           placeholder="Prix"
+                                                           required>
+                                                <% } %>
+                                            </td>
+                                        <% } %>
+                                    </tr>
+                                <% 
+                                    }
+                                } 
+                                %>
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 5px; border-left: 4px solid #0066cc;">
+                            <strong>💡 Exemple :</strong>
+                            <ul style="margin: 10px 0 0 20px;">
+                                <li>Économique ADULTE : <code>500000</code> Ar (prix fixe)</li>
+                                <li>Économique ENFANT : <code>350000</code> Ar (prix fixe)</li>
+                                <li>Économique BÉBÉ : <code>10</code> % → Prix final = 500000 × 10% = <strong>50000 Ar</strong></li>
+                            </ul>
+                        </div>
                     </div>
                 <% } %>
                 

@@ -160,6 +160,17 @@
         <url-pattern>/methode-paiement</url-pattern>
     </servlet-mapping>
     
+    <!-- Type Client Servlet -->
+    <servlet>
+        <servlet-name>TypeClientServlet</servlet-name>
+        <servlet-class>controller.TypeClientServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>TypeClientServlet</servlet-name>
+        <url-pattern>/type-client</url-pattern>
+    </servlet-mapping>
+    
     <!-- Session Config -->
     <session-config>
         <session-timeout>30</session-timeout>

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.Reservation, model.Client, model.VolOpere, model.LigneVol, java.util.List" %>
+<%@ page import="model.Reservation, model.Client, model.VolOpere, model.LigneVol, model.TypeClient, java.util.List" %>
+<%@ page import="dao.TypeClientDAO" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
 <html lang="fr">
@@ -47,6 +48,11 @@
                 List<Client> clients = (List<Client>) request.getAttribute("clients");
                 List<VolOpere> vols = (List<VolOpere>) request.getAttribute("vols");
                 List<LigneVol> lignes = (List<LigneVol>) request.getAttribute("lignes");
+                
+                // Charger les types de clients
+                TypeClientDAO typeClientDAO = new TypeClientDAO();
+                List<TypeClient> typesClients = typeClientDAO.getAll();
+                
                 boolean isEdit = (reservation != null);
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
                 
@@ -171,6 +177,26 @@
                     </div>
                     
                     <% if (!isEdit) { %>
+                    <div class="form-group">
+                        <label for="type_client_id">Type de Client *</label>
+                        <select id="type_client_id" name="type_client_id" required>
+                            <option value="">-- Sélectionner un type --</option>
+                            <% if (typesClients != null) {
+                                for (TypeClient tc : typesClients) { %>
+                                    <option value="<%= tc.getId() %>">
+                                        <%= tc.getLibelle() %>
+                                        <% if (tc.getDescription() != null && !tc.getDescription().isEmpty()) { %>
+                                            - <%= tc.getDescription() %>
+                                        <% } %>
+                                    </option>
+                            <%  }
+                            } %>
+                        </select>
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Le prix du billet sera calculé selon le type de client sélectionné
+                        </small>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="siege_vol_id">Siège Disponible *</label>
                         <select id="siege_vol_id" name="siege_vol_id" required>

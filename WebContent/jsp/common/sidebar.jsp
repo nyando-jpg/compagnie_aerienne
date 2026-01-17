@@ -95,6 +95,10 @@
             <span class="menu-item-icon">👥</span>
             <span class="menu-item-text">Clients</span>
         </a>
+        <a href="${pageContext.request.contextPath}/type-client" class="menu-item">
+            <span class="menu-item-icon">🏷️</span>
+            <span class="menu-item-text">Types de Client</span>
+        </a>
         <a href="${pageContext.request.contextPath}/ligne-vol" class="menu-item">
             <span class="menu-item-icon">📋</span>
             <span class="menu-item-text">Lignes de vol</span>

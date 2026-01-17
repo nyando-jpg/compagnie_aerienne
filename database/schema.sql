@@ -28,6 +28,7 @@ DROP TABLE IF EXISTS etat_avion CASCADE;
 DROP TABLE IF EXISTS model_avion CASCADE;
 DROP TABLE IF EXISTS classe_siege CASCADE;
 DROP TABLE IF EXISTS status_vol CASCADE;
+DROP TABLE IF EXISTS type_client CASCADE;
 
 DROP TYPE IF EXISTS statut_reservation_enum CASCADE;
 DROP TYPE IF EXISTS statut_billet_enum CASCADE;
@@ -61,6 +62,18 @@ CREATE TABLE classe_siege (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Types de clients
+CREATE TABLE type_client (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    libelle VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    mode_calcul VARCHAR(20) DEFAULT 'FIXE' CHECK (mode_calcul IN ('FIXE', 'POURCENTAGE')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON COLUMN type_client.mode_calcul IS 'FIXE: prix fixe à saisir dans prix_vol, POURCENTAGE: pourcentage du prix adulte à saisir';
 
 -- Rôles équipage
 CREATE TABLE role_equipage (
@@ -175,18 +188,25 @@ CREATE TABLE vol_opere (
     CHECK (date_heure_depart < date_heure_arrivee)
 );
 
--- Prix par vol opéré et classe
+-- Prix par vol opéré, classe et type de client
 CREATE TABLE prix_vol (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     vol_opere_id INT NOT NULL,
     classe_siege_id INT NOT NULL,
-    prix_base DECIMAL(10,2) NOT NULL CHECK (prix_base >= 0),
+    type_client_id INT NOT NULL,
+    prix_base DECIMAL(10,2) CHECK (prix_base >= 0),
+    pourcentage_base DECIMAL(5,2) CHECK (pourcentage_base >= 0 AND pourcentage_base <= 100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (vol_opere_id) REFERENCES vol_opere(id) ON DELETE CASCADE,
     FOREIGN KEY (classe_siege_id) REFERENCES classe_siege(id) ON DELETE RESTRICT,
-    UNIQUE (vol_opere_id, classe_siege_id)
+    FOREIGN KEY (type_client_id) REFERENCES type_client(id) ON DELETE RESTRICT,
+    UNIQUE (vol_opere_id, classe_siege_id, type_client_id),
+    CHECK ((prix_base IS NOT NULL AND pourcentage_base IS NULL) OR (prix_base IS NULL AND pourcentage_base IS NOT NULL))
 );
+
+COMMENT ON COLUMN prix_vol.prix_base IS 'Prix fixe en Ariary (pour types FIXE)';
+COMMENT ON COLUMN prix_vol.pourcentage_base IS 'Pourcentage du prix adulte (pour types POURCENTAGE)';
 
 -- Siege_vol (sièges disponibles pour un vol opéré)
 CREATE TABLE siege_vol (
@@ -220,8 +240,12 @@ CREATE TABLE client (
     prenom VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     telephone VARCHAR(20),
+    date_naissance DATE,
+    adresse TEXT,
+    type_client_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (type_client_id) REFERENCES type_client(id) ON DELETE RESTRICT
 );
 
 -- Réservations

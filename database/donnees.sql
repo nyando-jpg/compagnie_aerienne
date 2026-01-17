@@ -8,6 +8,12 @@ INSERT INTO classe_siege (libelle, description) VALUES
 ('ECONOMIQUE', 'Classe économique standard'),
 ('PREMIERE', 'Première classe');
 
+-- Types de clients
+INSERT INTO type_client (libelle, description, mode_calcul) VALUES
+('ADULTE', 'Client adulte', 'FIXE'),
+('ENFANT', 'Client enfant (2-11 ans)', 'FIXE'),
+('BEBE', 'Bébé (0-2 ans) - pourcentage du tarif adulte', 'POURCENTAGE');
+
 -- Rôles équipage
 INSERT INTO role_equipage (libelle, description) VALUES
 ('PILOTE', 'Pilote de ligne'),
@@ -115,20 +121,36 @@ INSERT INTO vol_opere (ligne_vol_id, avion_id, date_heure_depart, date_heure_arr
 -- Même ligne, autre avion, autre horaire (démontre la flexibilité)
 (1, 2, '2026-01-15 18:00', '2026-01-15 22:00', 1, 0);
 
--- Prix par vol opéré et classe (prix spécifiques à chaque vol)
-INSERT INTO prix_vol (vol_opere_id, classe_siege_id, prix_base) VALUES
+-- Prix par vol opéré, classe et type de client (prix spécifiques à chaque vol)
+INSERT INTO prix_vol (vol_opere_id, classe_siege_id, type_client_id, prix_base, pourcentage_base) VALUES
 -- Vol 1 (TNR-JNB du 15/01 à 08h)
-(1, 1, 500.00),   -- Economique
-(1, 2, 2500.00),  -- Premiere
+(1, 1, 1, 500.00, NULL),   -- Economique Adulte (prix fixe)
+(1, 1, 2, 350.00, NULL),   -- Economique Enfant (prix fixe)
+(1, 1, 3, NULL, 10.00),    -- Economique Bébé (10% du prix adulte = 50.00)
+(1, 2, 1, 2500.00, NULL),  -- Premiere Adulte (prix fixe)
+(1, 2, 2, 1750.00, NULL),  -- Premiere Enfant (prix fixe)
+(1, 2, 3, NULL, 10.00),    -- Premiere Bébé (10% du prix adulte = 250.00)
 -- Vol 2 (JNB-CDG du 16/01 à 10h)
-(2, 1, 600.00),   -- Economique
-(2, 2, 3000.00),  -- Premiere
+(2, 1, 1, 600.00, NULL),   -- Economique Adulte (prix fixe)
+(2, 1, 2, 420.00, NULL),   -- Economique Enfant (prix fixe)
+(2, 1, 3, NULL, 10.00),    -- Economique Bébé (10% du prix adulte = 60.00)
+(2, 2, 1, 3000.00, NULL),  -- Premiere Adulte (prix fixe)
+(2, 2, 2, 2100.00, NULL),  -- Premiere Enfant (prix fixe)
+(2, 2, 3, NULL, 10.00),    -- Premiere Bébé (10% du prix adulte = 300.00)
 -- Vol 3 (CDG-LHR du 17/01 à 14h)
-(3, 1, 550.00),   -- Economique
-(3, 2, 2000.00),  -- Premiere
+(3, 1, 1, 550.00, NULL),   -- Economique Adulte (prix fixe)
+(3, 1, 2, 385.00, NULL),   -- Economique Enfant (prix fixe)
+(3, 1, 3, NULL, 10.00),    -- Economique Bébé (10% du prix adulte = 55.00)
+(3, 2, 1, 2000.00, NULL),  -- Premiere Adulte (prix fixe)
+(3, 2, 2, 1400.00, NULL),  -- Premiere Enfant (prix fixe)
+(3, 2, 3, NULL, 10.00),    -- Premiere Bébé (10% du prix adulte = 200.00)
 -- Vol 4 (TNR-JNB du 15/01 à 18h)
-(4, 1, 520.00),   -- Economique
-(4, 2, 2600.00);  -- Premiere
+(4, 1, 1, 520.00, NULL),   -- Economique Adulte (prix fixe)
+(4, 1, 2, 364.00, NULL),   -- Economique Enfant (prix fixe)
+(4, 1, 3, NULL, 10.00),    -- Economique Bébé (10% du prix adulte = 52.00)
+(4, 2, 1, 2600.00, NULL),  -- Premiere Adulte (prix fixe)
+(4, 2, 2, 1820.00, NULL),  -- Premiere Enfant (prix fixe)
+(4, 2, 3, NULL, 10.00);    -- Premiere Bébé (10% du prix adulte = 260.00)
 
 -- Siege_vol (UNIQUEMENT les sièges RESERVE - les autres sont LIBRE par défaut)
 -- Vol 1: quelques sièges réservés
@@ -167,10 +189,10 @@ INSERT INTO vol_opere_equipage (vol_opere_id, equipage_id) VALUES
 (4, 3);
 
 -- Clients
-INSERT INTO client (nom, prenom, email, telephone) VALUES
-('Rakotomalala', 'Jean', 'jean.rakoto@example.com', '+261330000001'),
-('Rasoamanana', 'Lala', 'lala.raso@example.com', '+261330000002'),
-('Andriantsitohaina', 'Hery', 'hery.andi@example.com', '+261330000003');
+INSERT INTO client (nom, prenom, email, telephone, date_naissance, adresse, type_client_id) VALUES
+('Rakotomalala', 'Jean', 'jean.rakoto@example.com', '+261330000001', '1985-05-15', 'Antananarivo, Madagascar', 1),  -- Adulte
+('Rasoamanana', 'Lala', 'lala.raso@example.com', '+261330000002', '2015-08-20', 'Fianarantsoa, Madagascar', 2),  -- Enfant
+('Andriantsitohaina', 'Hery', 'hery.andi@example.com', '+261330000003', '1990-03-10', 'Toamasina, Madagascar', 1);  -- Adulte
 
 -- Réservations (avec vol_opere_id au lieu de vol_id)
 INSERT INTO reservation (client_id, vol_opere_id, statut) VALUES

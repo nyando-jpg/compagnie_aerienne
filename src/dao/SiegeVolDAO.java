@@ -1,10 +1,10 @@
 package dao;
 
-import model.SiegeVol;
-import util.DatabaseConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import model.SiegeVol;
+import util.DatabaseConnection;
 
 public class SiegeVolDAO {
 
@@ -20,6 +20,8 @@ public class SiegeVolDAO {
                      "    WHERE vol_opere_id = ? AND statut = 'RESERVE' " +
                      "  ) " +
                      "ORDER BY s.numero_siege";
+        
+        System.out.println("[DEBUG] SiegeVolDAO.getSiegesDisponibles() - Recherche sièges pour vol_opere_id=" + volOpereId);
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -39,7 +41,10 @@ public class SiegeVolDAO {
                 sv.setClasseSiegeId(rs.getInt("classe_siege_id"));
                 sieges.add(sv);
             }
+            
+            System.out.println("[DEBUG] " + sieges.size() + " sièges disponibles trouvés");
         } catch (SQLException e) {
+            System.err.println("[ERROR] SQL Exception in getSiegesDisponibles: " + e.getMessage());
             e.printStackTrace();
         }
         return sieges;
