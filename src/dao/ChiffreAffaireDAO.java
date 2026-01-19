@@ -1,13 +1,13 @@
 package dao;
 
-import util.DatabaseConnection;
-import model.Reservation;
-import model.VolOpere;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import model.Reservation;
+import model.VolOpere;
+import util.DatabaseConnection;
 
 public class ChiffreAffaireDAO {
 
@@ -27,11 +27,27 @@ public class ChiffreAffaireDAO {
         sql.append("SELECT ");
         sql.append("    COUNT(DISTINCT r.id) as nombre_reservations, ");
         sql.append("    COUNT(b.id) as nombre_billets, ");
-        sql.append("    COALESCE(SUM(b.prix), 0) as chiffre_affaire_total ");
+        sql.append("    COALESCE(SUM( ");
+        sql.append("        CASE ");
+        sql.append("            WHEN pv.prix_base IS NOT NULL THEN pv.prix_base ");
+        sql.append("            WHEN pv.pourcentage_base IS NOT NULL THEN ");
+        sql.append("                (SELECT pv2.prix_base FROM prix_vol pv2 ");
+        sql.append("                 WHERE pv2.vol_opere_id = vo.id ");
+        sql.append("                 AND pv2.classe_siege_id = s.classe_siege_id ");
+        sql.append("                 AND pv2.type_client_id = 1) * (pv.pourcentage_base / 100.0) ");
+        sql.append("            ELSE 0 ");
+        sql.append("        END ");
+        sql.append("    ), 0) as chiffre_affaire_total ");
         sql.append("FROM billet b ");
         sql.append("JOIN reservation r ON b.reservation_id = r.id ");
         sql.append("JOIN vol_opere vo ON r.vol_opere_id = vo.id ");
         sql.append("JOIN ligne_vol lv ON vo.ligne_vol_id = lv.id ");
+        sql.append("JOIN siege_vol sv ON b.siege_vol_id = sv.id ");
+        sql.append("JOIN siege s ON sv.siege_id = s.id ");
+        sql.append("JOIN client c ON r.client_id = c.id ");
+        sql.append("JOIN prix_vol pv ON pv.vol_opere_id = vo.id ");
+        sql.append("    AND pv.classe_siege_id = s.classe_siege_id ");
+        sql.append("    AND pv.type_client_id = c.type_client_id ");
         sql.append("WHERE r.statut IN ('CONFIRMEE', 'EN_ATTENTE') ");
         
         // Ajouter les filtres
@@ -91,13 +107,27 @@ public class ChiffreAffaireDAO {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ");
         sql.append("    cs.libelle as classe, ");
-        sql.append("    COALESCE(SUM(b.prix), 0) as ca ");
+        sql.append("    COALESCE(SUM( ");
+        sql.append("        CASE ");
+        sql.append("            WHEN pv.prix_base IS NOT NULL THEN pv.prix_base ");
+        sql.append("            WHEN pv.pourcentage_base IS NOT NULL THEN ");
+        sql.append("                (SELECT pv2.prix_base FROM prix_vol pv2 ");
+        sql.append("                 WHERE pv2.vol_opere_id = vo.id ");
+        sql.append("                 AND pv2.classe_siege_id = s.classe_siege_id ");
+        sql.append("                 AND pv2.type_client_id = 1) * (pv.pourcentage_base / 100.0) ");
+        sql.append("            ELSE 0 ");
+        sql.append("        END ");
+        sql.append("    ), 0) as ca ");
         sql.append("FROM billet b ");
         sql.append("JOIN reservation r ON b.reservation_id = r.id ");
         sql.append("JOIN siege_vol sv ON b.siege_vol_id = sv.id ");
         sql.append("JOIN siege s ON sv.siege_id = s.id ");
         sql.append("JOIN classe_siege cs ON s.classe_siege_id = cs.id ");
         sql.append("JOIN vol_opere vo ON r.vol_opere_id = vo.id ");
+        sql.append("JOIN client c ON r.client_id = c.id ");
+        sql.append("JOIN prix_vol pv ON pv.vol_opere_id = vo.id ");
+        sql.append("    AND pv.classe_siege_id = s.classe_siege_id ");
+        sql.append("    AND pv.type_client_id = c.type_client_id ");
         sql.append("WHERE r.statut IN ('CONFIRMEE', 'EN_ATTENTE') ");
         
         if (ligneVolId != null) {
@@ -157,7 +187,16 @@ public class ChiffreAffaireDAO {
         sql.append("SELECT r.id, r.client_id, r.vol_opere_id, r.date_reservation, r.statut, ");
         sql.append("c.nom as client_nom, c.prenom as client_prenom, ");
         sql.append("lv.numero_vol, ad.nom as aeroport_depart, aa.nom as aeroport_arrivee, ");
-        sql.append("vo.date_heure_depart, s.numero_siege, b.prix ");
+        sql.append("vo.date_heure_depart, s.numero_siege, ");
+        sql.append("CASE ");
+        sql.append("    WHEN pv.prix_base IS NOT NULL THEN pv.prix_base ");
+        sql.append("    WHEN pv.pourcentage_base IS NOT NULL THEN ");
+        sql.append("        (SELECT pv2.prix_base FROM prix_vol pv2 ");
+        sql.append("         WHERE pv2.vol_opere_id = vo.id ");
+        sql.append("         AND pv2.classe_siege_id = s.classe_siege_id ");
+        sql.append("         AND pv2.type_client_id = 1) * (pv.pourcentage_base / 100.0) ");
+        sql.append("    ELSE 0 ");
+        sql.append("END as prix ");
         sql.append("FROM reservation r ");
         sql.append("JOIN client c ON r.client_id = c.id ");
         sql.append("JOIN vol_opere vo ON r.vol_opere_id = vo.id ");
@@ -167,6 +206,9 @@ public class ChiffreAffaireDAO {
         sql.append("LEFT JOIN billet b ON r.id = b.reservation_id ");
         sql.append("LEFT JOIN siege_vol sv ON b.siege_vol_id = sv.id ");
         sql.append("LEFT JOIN siege s ON sv.siege_id = s.id ");
+        sql.append("LEFT JOIN prix_vol pv ON pv.vol_opere_id = vo.id ");
+        sql.append("    AND pv.classe_siege_id = s.classe_siege_id ");
+        sql.append("    AND pv.type_client_id = c.type_client_id ");
         sql.append("WHERE r.statut IN ('CONFIRMEE', 'EN_ATTENTE') ");
         
         if (ligneVolId != null) {

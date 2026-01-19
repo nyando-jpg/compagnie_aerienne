@@ -177,32 +177,42 @@
                     </div>
                     
                     <% if (!isEdit) { %>
-                    <div class="form-group">
-                        <label for="type_client_id">Type de Client *</label>
-                        <select id="type_client_id" name="type_client_id" required>
-                            <option value="">-- Sélectionner un type --</option>
-                            <% if (typesClients != null) {
-                                for (TypeClient tc : typesClients) { %>
-                                    <option value="<%= tc.getId() %>">
-                                        <%= tc.getLibelle() %>
-                                        <% if (tc.getDescription() != null && !tc.getDescription().isEmpty()) { %>
-                                            - <%= tc.getDescription() %>
-                                        <% } %>
-                                    </option>
-                            <%  }
-                            } %>
-                        </select>
-                        <small style="color: #666; display: block; margin-top: 5px;">
-                            Le prix du billet sera calculé selon le type de client sélectionné
-                        </small>
+                    <h3 style="margin-top: 20px; color: #667eea;">🎫 3. Passagers / billets</h3>
+                    <div id="billetLines">
+                        <div class="billet-line">
+                            <div class="form-row" style="grid-template-columns: 2fr 2fr auto; align-items: center;">
+                                <div class="form-group">
+                                    <label>Type de Client *</label>
+                                    <select name="type_client_id[]" class="type-client-select" required>
+                                        <option value="">-- Sélectionner un type --</option>
+                                        <% if (typesClients != null) {
+                                            for (TypeClient tc : typesClients) { %>
+                                                <option value="<%= tc.getId() %>">
+                                                    <%= tc.getLibelle() %>
+                                                    <% if (tc.getDescription() != null && !tc.getDescription().isEmpty()) { %>
+                                                        - <%= tc.getDescription() %>
+                                                    <% } %>
+                                                </option>
+                                        <%  }
+                                        } %>
+                                    </select>
+                                    <small style="color: #666; display: block; margin-top: 5px;">
+                                        Le prix du billet sera calculé selon le type de client sélectionné
+                                    </small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Siège Disponible *</label>
+                                    <select name="siege_id[]" class="siege-select" required>
+                                        <option value="">-- D'abord sélectionner un vol --</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: center; justify-content: center;">
+                                    <button type="button" class="btn btn-secondary" onclick="removeBilletLine(this)">❌</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="siege_vol_id">Siège Disponible *</label>
-                        <select id="siege_vol_id" name="siege_vol_id" required>
-                            <option value="">-- D'abord sélectionner un vol --</option>
-                        </select>
-                    </div>
+                    <button type="button" class="btn" style="margin-top: 10px;" onclick="addBilletLine()">➕ Ajouter un passager</button>
                     <% } %>
                     
                     <% if (isEdit) { %>
@@ -218,39 +228,89 @@
                     <% } else { %>
                     <input type="hidden" name="statut" value="EN_ATTENTE">
                     <% } %>
-                    
+
                     <script>
-                    // Charger sièges quand vol change
+                    <% if (!isEdit) { %>
+                    let cachedSieges = [];
+
+                    function updateAllSiegeSelects() {
+                        const selects = document.querySelectorAll('.siege-select');
+                        selects.forEach(function(select) {
+                            select.innerHTML = '';
+                            if (!cachedSieges || cachedSieges.length === 0) {
+                                const opt = document.createElement('option');
+                                opt.value = '';
+                                opt.textContent = "-- D'abord sélectionner un vol --";
+                                select.appendChild(opt);
+                                return;
+                            }
+                            const placeholder = document.createElement('option');
+                            placeholder.value = '';
+                            placeholder.textContent = "-- Choisir un siège --";
+                            select.appendChild(placeholder);
+                            cachedSieges.forEach(function(siege) {
+                                const opt = document.createElement('option');
+                                opt.value = siege.id;
+                                opt.textContent = siege.numeroSiege + ' (' + siege.classeLibelle + ')';
+                                select.appendChild(opt);
+                            });
+                        });
+                    }
+
                     document.getElementById('vol_opere_id').addEventListener('change', function() {
-                        var volId = this.value;
-                        var siegeSelect = document.getElementById('siege_vol_id');
-                        
+                        const volId = this.value;
+                        cachedSieges = [];
                         if (!volId) {
-                            siegeSelect.innerHTML = '<option value="">-- D\'abord sélectionner un vol --</option>';
+                            updateAllSiegeSelects();
                             return;
                         }
-                        
-                        siegeSelect.innerHTML = '<option value="">Chargement...</option>';
-                        
+
                         fetch('${pageContext.request.contextPath}/reservation?action=sieges&vol_opere_id=' + volId)
                             .then(response => response.json())
                             .then(data => {
-                                siegeSelect.innerHTML = '<option value="">-- Choisir un siège --</option>';
-                                data.forEach(function(siege) {
-                                    var option = document.createElement('option');
-                                    option.value = siege.id;
-                                    option.textContent = siege.numeroSiege + ' (' + siege.classeLibelle + ')';
-                                    siegeSelect.appendChild(option);
-                                });
-                                if (data.length === 0) {
-                                    siegeSelect.innerHTML = '<option value="">Aucun siège disponible</option>';
+                                cachedSieges = data || [];
+                                updateAllSiegeSelects();
+                                if (cachedSieges.length === 0) {
+                                    document.querySelectorAll('.siege-select').forEach(function(select) {
+                                        select.innerHTML = '<option value="">Aucun siège disponible</option>';
+                                    });
                                 }
                             })
                             .catch(error => {
-                                siegeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                                document.querySelectorAll('.siege-select').forEach(function(select) {
+                                    select.innerHTML = '<option value="">Erreur de chargement</option>';
+                                });
                                 console.error('Erreur:', error);
                             });
                     });
+
+                    function addBilletLine() {
+                        const container = document.getElementById('billetLines');
+                        const firstLine = container.querySelector('.billet-line');
+                        const newLine = firstLine.cloneNode(true);
+
+                        const typeSelect = newLine.querySelector('.type-client-select');
+                        if (typeSelect) {
+                            typeSelect.selectedIndex = 0;
+                        }
+                        const siegeSelect = newLine.querySelector('.siege-select');
+                        if (siegeSelect) {
+                            siegeSelect.innerHTML = '';
+                        }
+
+                        container.appendChild(newLine);
+                        updateAllSiegeSelects();
+                    }
+
+                    function removeBilletLine(button) {
+                        const line = button.closest('.billet-line');
+                        const container = document.getElementById('billetLines');
+                        const lines = container.querySelectorAll('.billet-line');
+                        if (lines.length > 1) {
+                            container.removeChild(line);
+                        }
+                    }
+                    <% } %>
                     </script>
                     
                     <div class="form-actions">

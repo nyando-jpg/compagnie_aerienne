@@ -188,49 +188,68 @@ public class ReservationServlet extends HttpServlet {
             int clientId = Integer.parseInt(request.getParameter("client_id"));
             int volOpereId = Integer.parseInt(request.getParameter("vol_opere_id"));
             String statut = request.getParameter("statut");
-            int siegeId = Integer.parseInt(request.getParameter("siege_vol_id"));
-            int typeClientId = Integer.parseInt(request.getParameter("type_client_id"));
             
-            // 1. Créer réservation
+            // Récupérer les lignes (type client + siège) potentielles
+            String[] typeClientIds = request.getParameterValues("type_client_id[]");
+            String[] siegeIds = request.getParameterValues("siege_id[]");
+
+            if (typeClientIds == null || siegeIds == null || typeClientIds.length == 0 || typeClientIds.length != siegeIds.length) {
+                request.setAttribute("error", "Aucune ligne de billet valide n'a été fournie");
+                listReservations(request, response);
+                return;
+            }
+
+            // 1. Créer une seule réservation pour ce client et ce vol
             Reservation r = new Reservation(clientId, volOpereId, statut);
             int reservationId = reservationDAO.insertAndGetId(r);
-            
-            if (reservationId > 0) {
-                // 2. Récupérer infos siège AVANT de créer siege_vol
-                SiegeVol siegeInfo = siegeVolDAO.getSiegeInfoById(siegeId);
-                VolOpere vol = volOpereDAO.getById(volOpereId);
-                
-                // 3. Calculer prix basé sur le vol opéré, classe et type de client
-                PrixVolDAO prixVolDAO = new PrixVolDAO();
-                double prix = prixVolDAO.getPrix(volOpereId, siegeInfo.getClasseSiegeId(), typeClientId);
-                
-                System.out.println("[DEBUG] ReservationServlet - Prix récupéré: " + prix);
-                
-                if (prix <= 0) {
-                    request.setAttribute("error", "Prix introuvable pour ce vol et classe. Assurez-vous que les prix ont été définis lors de la création du vol opéré. Consultez les logs Tomcat pour plus de détails.");
-                    listReservations(request, response);
-                    return;
-                }
-                
-                // 4. Créer siege_vol avec statut RESERVE
-                int siegeVolId = siegeVolDAO.insertSiegeVol(volOpereId, siegeId, "RESERVE");
-                
-                if (siegeVolId > 0) {
-                    // 5. Créer billet
-                    BilletDAO billetDAO = new BilletDAO();
-                    Billet billet = new Billet(reservationId, siegeVolId, prix, "EMIS");
-                    int billetId = billetDAO.insert(billet);
-                    
-                    if (billetId > 0) {
-                        request.setAttribute("message", "Réservation et billet créés avec succès");
-                    } else {
-                        request.setAttribute("error", "Erreur lors de la création du billet");
-                    }
-                } else {
-                    request.setAttribute("error", "Erreur lors de la réservation du siège");
-                }
-            } else {
+
+            if (reservationId <= 0) {
                 request.setAttribute("error", "Erreur lors de la création de la réservation");
+                listReservations(request, response);
+                return;
+            }
+
+            PrixVolDAO prixVolDAO = new PrixVolDAO();
+            BilletDAO billetDAO = new BilletDAO();
+
+            int billetsCrees = 0;
+
+            // 2. Pour chaque ligne, créer un siège réservé + un billet
+            for (int i = 0; i < typeClientIds.length; i++) {
+                int typeClientId = Integer.parseInt(typeClientIds[i]);
+                int siegeId = Integer.parseInt(siegeIds[i]);
+
+                // Récupérer infos siège depuis la table siege
+                SiegeVol siegeInfo = siegeVolDAO.getSiegeInfoById(siegeId);
+                if (siegeInfo == null) {
+                    continue; // Siège introuvable, on ignore cette ligne
+                }
+
+                // Calculer prix basé sur le vol opéré, classe et type de client
+                double prix = prixVolDAO.getPrix(volOpereId, siegeInfo.getClasseSiegeId(), typeClientId);
+
+                if (prix <= 0) {
+                    continue; // Prix introuvable, on ignore cette ligne
+                }
+
+                // Créer siege_vol avec statut RESERVE pour ce siège
+                int siegeVolId = siegeVolDAO.insertSiegeVol(volOpereId, siegeId, "RESERVE");
+                if (siegeVolId <= 0) {
+                    continue; // Impossible de réserver ce siège (probablement déjà pris)
+                }
+
+                // Créer billet lié à cette réservation et ce siège
+                Billet billet = new Billet(reservationId, siegeVolId, prix, "EMIS");
+                int billetId = billetDAO.insert(billet);
+                if (billetId > 0) {
+                    billetsCrees++;
+                }
+            }
+
+            if (billetsCrees > 0) {
+                request.setAttribute("message", billetsCrees + " billet(s) créé(s) avec succès pour cette réservation");
+            } else {
+                request.setAttribute("error", "Aucun billet n'a pu être créé pour cette réservation (sièges ou prix introuvables)");
             }
         } catch (Exception e) {
             request.setAttribute("error", "Erreur: " + e.getMessage());

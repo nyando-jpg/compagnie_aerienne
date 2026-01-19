@@ -141,7 +141,8 @@ public class VolOpereDAO {
         sql.append("LEFT JOIN aeroport ad ON lv.aeroport_depart_id = ad.id ");
         sql.append("LEFT JOIN aeroport aa ON lv.aeroport_arrivee_id = aa.id ");
         sql.append("WHERE vo.ligne_vol_id = ? ");
-        sql.append("AND vo.date_heure_depart > CURRENT_TIMESTAMP ");
+        // Commenté pour permettre les réservations sur vols passés (pour tests)
+        // sql.append("AND vo.date_heure_depart > CURRENT_TIMESTAMP ");
         
         if (avionId != null) {
             sql.append("AND vo.avion_id = ? ");
