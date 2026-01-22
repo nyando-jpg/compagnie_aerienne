@@ -170,6 +170,50 @@
         <servlet-name>TypeClientServlet</servlet-name>
         <url-pattern>/type-client</url-pattern>
     </servlet-mapping>
+
+    <!-- Diffusion Servlet -->
+    <servlet>
+        <servlet-name>DiffusionServlet</servlet-name>
+        <servlet-class>controller.DiffusionServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DiffusionServlet</servlet-name>
+        <url-pattern>/diffusion</url-pattern>
+    </servlet-mapping>
+    
+        <!-- ChiffreAffaire Servlet -->
+        <servlet>
+            <servlet-name>ChiffreAffaireDiffusionServlet</servlet-name>
+            <servlet-class>controller.ChiffreAffaireDiffusionServlet</servlet-class>
+        </servlet>
+    
+        <servlet-mapping>
+            <servlet-name>ChiffreAffaireDiffusionServlet</servlet-name>
+            <url-pattern>/diffusion/ca</url-pattern>
+        </servlet-mapping>
+
+    <!-- PaiementDiffusion Servlet -->
+    <servlet>
+        <servlet-name>PaiementDiffusionServlet</servlet-name>
+        <servlet-class>controller.PaiementDiffusionServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>PaiementDiffusionServlet</servlet-name>
+        <url-pattern>/paiement-diffusion/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Societe Servlet -->
+    <servlet>
+        <servlet-name>SocieteServlet</servlet-name>
+        <servlet-class>controller.SocieteServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>SocieteServlet</servlet-name>
+        <url-pattern>/societe</url-pattern>
+    </servlet-mapping>
     
     <!-- Session Config -->
     <session-config>

@@ -231,3 +231,30 @@ INSERT INTO maintenance_avion (avion_id, date_debut, date_fin, description) VALU
 
 -- Message succès
 SELECT 'Toutes les données ont été créées avec succès !' AS status;
+
+-- Sociétés (ajustez colonnes si nécessaire)
+INSERT INTO societe(nom) VALUES
+  ('Lewis');
+
+INSERT INTO prixDiffusion(idSociete, valeur, datePrixDiff) VALUES
+  ( 1, 400000.00, '2024-01-01'),
+  ( 2, 400000.00,  '2024-06-01');
+
+-- Diffusions (id, idSociete, idVolOpere, dateDiff (timestamp), nombre)
+INSERT INTO diffusion(idSociete, idVolOpere, dateDiff, nombre) VALUES
+  (1, 5, '2024-02-15 10:00:00', 20),
+  (2, 5, '2025-03-01 15:00:00', 10);
+
+
+INSERT INTO paiementDiff(idDiffusion, montant, datePaiement) VALUES
+  (2, 2000000.00, '2025-12-20 12:00:00');
+
+UPDATE paiementDiff
+SET montant = 2000000.00
+WHERE idDiffusion = 2;
+
+INSERT INTO paiementDiff(idDiffusion, montant, datePaiement) VALUES
+  (6, 1000000.00, '2024-02-20 12:00:00');
+
+INSERT INTO prixDiffusion(idSociete, valeur, datePrixDiff) VALUES
+  ( 6, 400000.00, '2024-01-01');

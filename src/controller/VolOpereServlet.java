@@ -31,7 +31,7 @@ public class VolOpereServlet extends HttpServlet {
     private AvionDAO avionDAO;
     private TypeClientDAO typeClientDAO;
     private PrixVolDAO prixVolDAO;
-    
+
     @Override
     public void init() throws ServletException {
         super.init();
@@ -43,16 +43,16 @@ public class VolOpereServlet extends HttpServlet {
         typeClientDAO = new TypeClientDAO();
         prixVolDAO = new PrixVolDAO();
     }
-    
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        
+
         if (action == null) {
             action = "list";
         }
-        
+
         switch (action) {
             case "list":
                 listVolsOperes(request, response);
@@ -66,27 +66,24 @@ public class VolOpereServlet extends HttpServlet {
             case "delete":
                 deleteVolOpere(request, response);
                 break;
-            case "chiffre-affaire":
-                showChiffreAffaireForm(request, response);
-                break;
             default:
                 listVolsOperes(request, response);
         }
     }
-    
+
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        
+
         if ("insert".equals(action)) {
             insertVolOpere(request, response);
         } else if ("update".equals(action)) {
             updateVolOpere(request, response);
         }
     }
-    
-    private void listVolsOperes(HttpServletRequest request, HttpServletResponse response) 
+
+    private void listVolsOperes(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String search = request.getParameter("search");
         String status = request.getParameter("status");
@@ -94,12 +91,13 @@ public class VolOpereServlet extends HttpServlet {
         String avionIdStr = request.getParameter("avion_id");
         String dateDebutStr = request.getParameter("date_debut");
         String dateFinStr = request.getParameter("date_fin");
-        
-        Integer ligneVolId = (ligneVolIdStr != null && !ligneVolIdStr.isEmpty()) ? Integer.parseInt(ligneVolIdStr) : null;
+
+        Integer ligneVolId = (ligneVolIdStr != null && !ligneVolIdStr.isEmpty()) ? Integer.parseInt(ligneVolIdStr)
+                : null;
         Integer avionId = (avionIdStr != null && !avionIdStr.isEmpty()) ? Integer.parseInt(avionIdStr) : null;
         java.sql.Date dateDebut = null;
         java.sql.Date dateFin = null;
-        
+
         if (dateDebutStr != null && !dateDebutStr.isEmpty()) {
             try {
                 dateDebut = java.sql.Date.valueOf(dateDebutStr);
@@ -107,7 +105,7 @@ public class VolOpereServlet extends HttpServlet {
                 // Date invalide
             }
         }
-        
+
         if (dateFinStr != null && !dateFinStr.isEmpty()) {
             try {
                 dateFin = java.sql.Date.valueOf(dateFinStr);
@@ -115,16 +113,16 @@ public class VolOpereServlet extends HttpServlet {
                 // Date invalide
             }
         }
-        
+
         List<VolOpere> vols = volOpereDAO.search(search, status, ligneVolId, avionId, dateDebut, dateFin);
         List<Avion> avions = avionDAO.getAll();
-        
+
         request.setAttribute("vols", vols);
         request.setAttribute("avions", avions);
         request.getRequestDispatcher("/jsp/vol_opere/list.jsp").forward(request, response);
     }
-    
-    private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
+
+    private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<LigneVol> lignes = ligneVolDAO.getAll();
         List<Map<String, Object>> statuses = statusVolDAO.getAll();
@@ -138,8 +136,8 @@ public class VolOpereServlet extends HttpServlet {
         request.setAttribute("typesClients", typesClients);
         request.getRequestDispatcher("/jsp/vol_opere/form.jsp").forward(request, response);
     }
-    
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         VolOpere vo = volOpereDAO.getById(id);
@@ -156,32 +154,32 @@ public class VolOpereServlet extends HttpServlet {
         request.setAttribute("typesClients", typesClients);
         request.getRequestDispatcher("/jsp/vol_opere/form.jsp").forward(request, response);
     }
-    
-    private void insertVolOpere(HttpServletRequest request, HttpServletResponse response) 
+
+    private void insertVolOpere(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             int ligneVolId = Integer.parseInt(request.getParameter("ligne_vol_id"));
             int avionId = Integer.parseInt(request.getParameter("avion_id"));
             String dateDepart = request.getParameter("date_heure_depart");
             String dateArrivee = request.getParameter("date_heure_arrivee");
-            
+
             Timestamp tsDepart = Timestamp.valueOf(dateDepart.replace("T", " ") + ":00");
             Timestamp tsArrivee = Timestamp.valueOf(dateArrivee.replace("T", " ") + ":00");
-            
+
             VolOpere vo = new VolOpere(ligneVolId, avionId, tsDepart, tsArrivee);
             int volOpereId = volOpereDAO.insertAndGetId(vo);
-            
+
             if (volOpereId > 0) {
                 // Récupérer les prix par classe et type de client
                 List<ClasseSiege> classes = classeSiegeDAO.getAll();
                 List<TypeClient> typesClients = typeClientDAO.getAll();
-                
+
                 java.util.Map<String, Object> prixEtPourcentages = new java.util.HashMap<>();
-                
+
                 for (ClasseSiege cs : classes) {
                     for (TypeClient tc : typesClients) {
                         String key = cs.getId() + "_" + tc.getId();
-                        
+
                         if ("POURCENTAGE".equals(tc.getModeCalcul())) {
                             // Récupérer le pourcentage
                             String paramName = "pourcent_classe_" + cs.getId() + "_type_" + tc.getId();
@@ -201,10 +199,10 @@ public class VolOpereServlet extends HttpServlet {
                         }
                     }
                 }
-                
+
                 // Insérer les prix et pourcentages
                 prixVolDAO.insertPrixPourVol(volOpereId, prixEtPourcentages);
-                
+
                 request.setAttribute("message", "Vol opéré et prix ajoutés avec succès");
             } else {
                 request.setAttribute("error", "Erreur lors de l'ajout du vol");
@@ -213,11 +211,11 @@ public class VolOpereServlet extends HttpServlet {
             request.setAttribute("error", "Erreur: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         listVolsOperes(request, response);
     }
-    
-    private void updateVolOpere(HttpServletRequest request, HttpServletResponse response) 
+
+    private void updateVolOpere(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
             int id = Integer.parseInt(request.getParameter("id"));
@@ -228,21 +226,21 @@ public class VolOpereServlet extends HttpServlet {
             String statusParam = request.getParameter("status");
             int retardMinutes = Integer.parseInt(request.getParameter("retard_minutes"));
             String motifAnnulation = request.getParameter("motif_annulation");
-            
+
             Timestamp tsDepart = Timestamp.valueOf(dateDepart.replace("T", " ") + ":00");
             Timestamp tsArrivee = Timestamp.valueOf(dateArrivee.replace("T", " ") + ":00");
-            
+
             // Convertir status libelle en ID
             int statusId = statusVolDAO.getIdByLibelle(statusParam);
-            
+
             VolOpere vo = new VolOpere(ligneVolId, avionId, tsDepart, tsArrivee);
             vo.setId(id);
             vo.setStatusId(statusId);
             vo.setRetardMinutes(retardMinutes);
             vo.setMotifAnnulation(motifAnnulation);
-            
+
             boolean success = volOpereDAO.update(vo);
-            
+
             if (success) {
                 request.setAttribute("message", "Vol opéré modifié avec succès");
             } else {
@@ -251,31 +249,21 @@ public class VolOpereServlet extends HttpServlet {
         } catch (Exception e) {
             request.setAttribute("error", "Erreur: " + e.getMessage());
         }
-        
+
         listVolsOperes(request, response);
     }
-    
-    private void showChiffreAffaireForm(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        // Récupérer tous les vols pour le dropdown
-        List<VolOpere> vols = volOpereDAO.getAll();
-        request.setAttribute("vols", vols);
-        
-        // Afficher le formulaire (le calcul sera implémenté plus tard)
-        request.getRequestDispatcher("/jsp/vol_opere/chiffre_affaire.jsp").forward(request, response);
-    }
-    
-    private void deleteVolOpere(HttpServletRequest request, HttpServletResponse response) 
+
+    private void deleteVolOpere(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         boolean success = volOpereDAO.delete(id);
-        
+
         if (success) {
             request.setAttribute("message", "Vol opéré supprimé avec succès");
         } else {
             request.setAttribute("error", "Erreur lors de la suppression");
         }
-        
+
         listVolsOperes(request, response);
     }
 }

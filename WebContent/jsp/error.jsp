@@ -87,6 +87,20 @@
         <p>
             We're sorry, but the page you're looking for couldn't be found or an error occurred while processing your request.
         </p>
+        <%
+            String err = (String) request.getAttribute("errorMessage");
+            String stack = (String) request.getAttribute("stackTrace");
+            if (err != null) {
+        %>
+        <div style="text-align:left; margin-top:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; max-height:200px; overflow:auto;">
+            <strong>Erreur:</strong>
+            <pre style="white-space:pre-wrap;"><%= err %></pre>
+            <strong>Stacktrace:</strong>
+            <pre style="white-space:pre-wrap; font-size:12px;"><%= stack %></pre>
+        </div>
+        <%
+            }
+        %>
         <a href="${pageContext.request.contextPath}/home" class="btn">Go to Home Page</a>
     </div>
 </body>

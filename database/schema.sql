@@ -3,7 +3,6 @@
 -- PostgreSQL Schema complet pour Compagnie Aérienne
 -- Compatible PostgreSQL 15/16
 -- ============================================
-
 -- =====================================================
 -- 0) DROP EXISTING TABLES & TYPES (Clean Setup)
 -- =====================================================
@@ -29,6 +28,10 @@ DROP TABLE IF EXISTS model_avion CASCADE;
 DROP TABLE IF EXISTS classe_siege CASCADE;
 DROP TABLE IF EXISTS status_vol CASCADE;
 DROP TABLE IF EXISTS type_client CASCADE;
+DROP TABLE IF EXISTS diffusion CASCADE;
+DROP TABLE IF EXISTS prixdiffusion CASCADE; 
+DROP TABLE IF EXISTS paiementdiff CASCADE;
+DROP TABLE IF EXISTS societe CASCADE;
 
 DROP TYPE IF EXISTS statut_reservation_enum CASCADE;
 DROP TYPE IF EXISTS statut_billet_enum CASCADE;
@@ -316,4 +319,46 @@ CREATE TABLE maintenance_avion (
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (avion_id) REFERENCES avion(id) ON DELETE CASCADE
+);
+
+CREATE TABLE societe (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nom VARCHAR(100)
+);
+
+CREATE TABLE diffusion (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    idSociete int,
+    idVolOpere int,
+    nombre int,
+    dateDiff TIMESTAMP NOT NULL,
+    FOREIGN KEY (idSociete) REFERENCES societe(id) ON DELETE CASCADE,
+    FOREIGN KEY (idVolOpere) REFERENCES vol_opere(id) ON DELETE CASCADE
+);
+
+CREATE TABLE prixDiffusion (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    idSociete int,
+    valeur DECIMAL(10, 2),
+    datePrixDiff TIMESTAMP NOT NULL,
+    FOREIGN KEY (idSociete) REFERENCES societe(id) ON DELETE CASCADE
+);
+
+CREATE TABLE paiementDiff(
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    idDiffusion int,
+    montant DECIMAL(10, 2),
+    datePaiement TIMESTAMP NOT NULL,
+    FOREIGN KEY (idDiffusion) REFERENCES diffusion(id) ON DELETE CASCADE
+);
+
+CREATE TABLE paiement_diff_methode (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    paiement_diff_id INT NOT NULL,
+    methode_paiement_id INT NOT NULL,
+    montant DECIMAL(10,2) NOT NULL CHECK (montant > 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (paiement_diff_id) REFERENCES paiementDiff(id) ON DELETE CASCADE,
+    FOREIGN KEY (methode_paiement_id) REFERENCES methode_paiement(id) ON DELETE RESTRICT,
+    UNIQUE (paiement_diff_id, methode_paiement_id)
 );

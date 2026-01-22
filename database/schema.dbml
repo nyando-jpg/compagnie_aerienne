@@ -1,3 +1,8 @@
+// ============================================
+// Database: compagnie
+// DBML – Compatible PostgreSQL 15 / 16
+// ============================================
+
 Enum statut_reservation_enum {
   EN_ATTENTE
   CONFIRMEE
@@ -34,6 +39,15 @@ Table classe_siege {
   updated_at timestamp
 }
 
+Table type_client {
+  id int [pk, increment]
+  libelle varchar [unique, not null]
+  description text
+  mode_calcul varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
 Table role_equipage {
   id int [pk, increment]
   libelle varchar [unique, not null]
@@ -45,8 +59,8 @@ Table role_equipage {
 Table model_avion {
   id int [pk, increment]
   designation varchar [unique, not null]
-  fabricant varchar [not null]
-  capacite int [not null]
+  fabricant varchar
+  capacite int
   autonomie_km int
   vitesse_km_h int
   description text
@@ -65,51 +79,47 @@ Table etat_avion {
 Table avion {
   id int [pk, increment]
   code_avion varchar [unique, not null]
-  model_avion_id int [not null]
-  etat_avion_id int [not null]
-  capacite_totale int [not null]
+  model_avion_id int
+  etat_avion_id int
+  capacite_totale int
   created_at timestamp
   updated_at timestamp
 }
 
 Table siege {
   id int [pk, increment]
-  numero_siege varchar [not null]
-  classe_siege_id int [not null]
-  avion_id int [not null]
+  numero_siege varchar
+  classe_siege_id int
+  avion_id int
   created_at timestamp
   updated_at timestamp
-
-  Indexes {
-    (avion_id, numero_siege) [unique]
-  }
 }
 
 Table equipage {
   id int [pk, increment]
-  nom varchar [not null]
-  prenom varchar [not null]
-  role_id int [not null]
+  nom varchar
+  prenom varchar
+  role_id int
   created_at timestamp
   updated_at timestamp
 }
 
 Table aeroport {
   id int [pk, increment]
-  code_aeroport varchar [unique, not null]
-  nom varchar [not null]
-  ville varchar [not null]
-  pays varchar [not null]
+  code_aeroport varchar [unique]
+  nom varchar
+  ville varchar
+  pays varchar
   created_at timestamp
   updated_at timestamp
 }
 
 Table ligne_vol {
   id int [pk, increment]
-  numero_vol varchar [unique, not null]
-  aeroport_depart_id int [not null]
-  aeroport_arrivee_id int [not null]
-  duree_estimee_minutes int [not null]
+  numero_vol varchar [unique]
+  aeroport_depart_id int
+  aeroport_arrivee_id int
+  duree_estimee_minutes int
   distance_km int
   description text
   created_at timestamp
@@ -118,11 +128,11 @@ Table ligne_vol {
 
 Table vol_opere {
   id int [pk, increment]
-  ligne_vol_id int [not null]
-  avion_id int [not null]
-  date_heure_depart timestamp [not null]
-  date_heure_arrivee timestamp [not null]
-  status_id int [not null]
+  ligne_vol_id int
+  avion_id int
+  date_heure_depart timestamp
+  date_heure_arrivee timestamp
+  status_id int
   retard_minutes int
   motif_annulation text
   created_at timestamp
@@ -131,55 +141,48 @@ Table vol_opere {
 
 Table prix_vol {
   id int [pk, increment]
-  vol_opere_id int [not null]
-  classe_siege_id int [not null]
-  prix_base decimal [not null]
+  vol_opere_id int
+  classe_siege_id int
+  type_client_id int
+  prix_base decimal
+  pourcentage_base decimal
   created_at timestamp
   updated_at timestamp
-
-  Indexes {
-    (vol_opere_id, classe_siege_id) [unique]
-  }
 }
 
 Table siege_vol {
   id int [pk, increment]
-  vol_opere_id int [not null]
-  siege_id int [not null]
+  vol_opere_id int
+  siege_id int
   statut varchar
   created_at timestamp
   updated_at timestamp
-
-  Indexes {
-    (vol_opere_id, siege_id) [unique]
-  }
 }
 
 Table vol_opere_equipage {
   id int [pk, increment]
-  vol_opere_id int [not null]
-  equipage_id int [not null]
+  vol_opere_id int
+  equipage_id int
   created_at timestamp
-
-  Indexes {
-    (vol_opere_id, equipage_id) [unique]
-  }
 }
 
 Table client {
   id int [pk, increment]
-  nom varchar [not null]
-  prenom varchar [not null]
-  email varchar [unique, not null]
+  nom varchar
+  prenom varchar
+  email varchar [unique]
   telephone varchar
+  date_naissance date
+  adresse text
+  type_client_id int
   created_at timestamp
   updated_at timestamp
 }
 
 Table reservation {
   id int [pk, increment]
-  client_id int [not null]
-  vol_opere_id int [not null]
+  client_id int
+  vol_opere_id int
   date_reservation timestamp
   statut statut_reservation_enum
   created_at timestamp
@@ -188,9 +191,9 @@ Table reservation {
 
 Table billet {
   id int [pk, increment]
-  reservation_id int [not null]
-  siege_vol_id int [not null]
-  prix decimal [not null]
+  reservation_id int
+  siege_vol_id int
+  prix decimal
   statut statut_billet_enum
   created_at timestamp
   updated_at timestamp
@@ -198,7 +201,7 @@ Table billet {
 
 Table methode_paiement {
   id int [pk, increment]
-  libelle varchar [unique, not null]
+  libelle varchar [unique]
   description text
   created_at timestamp
   updated_at timestamp
@@ -206,8 +209,8 @@ Table methode_paiement {
 
 Table paiement {
   id int [pk, increment]
-  reservation_id int [not null]
-  montant decimal [not null]
+  reservation_id int
+  montant decimal
   date_paiement timestamp
   statut statut_paiement_enum
   created_at timestamp
@@ -216,46 +219,104 @@ Table paiement {
 
 Table paiement_methode {
   id int [pk, increment]
-  paiement_id int [not null]
-  methode_paiement_id int [not null]
-  montant decimal [not null]
+  paiement_id int
+  methode_paiement_id int
+  montant decimal
   created_at timestamp
-
-  Indexes {
-    (paiement_id, methode_paiement_id) [unique]
-  }
 }
 
 Table maintenance_avion {
   id int [pk, increment]
-  avion_id int [not null]
-  date_debut timestamp [not null]
+  avion_id int
+  date_debut timestamp
   date_fin timestamp
   description text
   created_at timestamp
 }
 
+Table societe {
+  id int [pk, increment]
+  nom varchar
+}
+
+Table diffusion {
+  id int [pk, increment]
+  idSociete int
+  idVolOpere int
+  nombre int
+  dateDiff timestamp
+}
+
+Table prixDiffusion {
+  id int [pk, increment]
+  idSociete int
+  valeur decimal
+  datePrixDiff timestamp
+}
+
+Table paiementDiff {
+  id int [pk, increment]
+  idDiffusion int
+  montant decimal
+  datePaiement timestamp
+}
+
+Table paiement_diff_methode {
+  id int [pk, increment]
+  paiement_diff_id int
+  methode_paiement_id int
+  montant decimal
+  created_at timestamp
+}
+
+// =====================
+// RELATIONS
+// =====================
+
 Ref: avion.model_avion_id > model_avion.id
 Ref: avion.etat_avion_id > etat_avion.id
+
 Ref: siege.classe_siege_id > classe_siege.id
 Ref: siege.avion_id > avion.id
+
 Ref: equipage.role_id > role_equipage.id
+
 Ref: ligne_vol.aeroport_depart_id > aeroport.id
 Ref: ligne_vol.aeroport_arrivee_id > aeroport.id
+
 Ref: vol_opere.ligne_vol_id > ligne_vol.id
 Ref: vol_opere.avion_id > avion.id
 Ref: vol_opere.status_id > status_vol.id
+
 Ref: prix_vol.vol_opere_id > vol_opere.id
 Ref: prix_vol.classe_siege_id > classe_siege.id
+Ref: prix_vol.type_client_id > type_client.id
+
 Ref: siege_vol.vol_opere_id > vol_opere.id
 Ref: siege_vol.siege_id > siege.id
+
 Ref: vol_opere_equipage.vol_opere_id > vol_opere.id
 Ref: vol_opere_equipage.equipage_id > equipage.id
+
+Ref: client.type_client_id > type_client.id
+
 Ref: reservation.client_id > client.id
 Ref: reservation.vol_opere_id > vol_opere.id
+
 Ref: billet.reservation_id > reservation.id
 Ref: billet.siege_vol_id > siege_vol.id
+
 Ref: paiement.reservation_id > reservation.id
 Ref: paiement_methode.paiement_id > paiement.id
 Ref: paiement_methode.methode_paiement_id > methode_paiement.id
+
 Ref: maintenance_avion.avion_id > avion.id
+
+Ref: diffusion.idSociete > societe.id
+Ref: diffusion.idVolOpere > vol_opere.id
+
+Ref: prixDiffusion.idSociete > societe.id
+
+Ref: paiementDiff.idDiffusion > diffusion.id
+Ref: paiement_diff_methode.paiement_diff_id > paiementDiff.id
+Ref: paiement_diff_methode.methode_paiement_id > methode_paiement.id

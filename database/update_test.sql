@@ -4,9 +4,9 @@
 
 -- Exemple: Mettre à jour le prix pour vol 1, classe Économique (1), type Adulte (1)
 UPDATE prix_vol
-SET prix_base = 550000.00,
+SET prix_base = 500.00,
     updated_at = NOW()
-WHERE vol_opere_id = 1
+WHERE vol_opere_id = 5
   AND classe_siege_id = 1
   AND type_client_id = 1;
 

@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <style>
 /* CSS SPECIFIQUE AU SIDEBAR (INCLUS DIRECTEMENT) */
 .sidebar {
@@ -115,13 +115,29 @@
             <span class="menu-item-icon">💵</span>
             <span class="menu-item-text">Paiements</span>
         </a>
+        <a href="${pageContext.request.contextPath}/paiement-diffusion" class="menu-item">
+            <span class="menu-item-icon">💸</span>
+            <span class="menu-item-text">Paiements diffusions</span>
+        </a>
         <a href="${pageContext.request.contextPath}/methode-paiement" class="menu-item">
             <span class="menu-item-icon">💳</span>
             <span class="menu-item-text">Méthodes de paiement</span>
         </a>
         <a href="${pageContext.request.contextPath}/chiffre-affaire" class="menu-item">
             <span class="menu-item-icon">💰</span>
-            <span class="menu-item-text">Chiffre d'affaires</span>
+            <span class="menu-item-text">Chiffre d'affaires places</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/diffusion" class="menu-item">
+            <span class="menu-item-icon">📺</span>
+            <span class="menu-item-text">Diffusions</span>
+        </a>
+            <a href="${pageContext.request.contextPath}/diffusion/ca" class="menu-item">
+                <span class="menu-item-icon">📺</span>
+                <span class="menu-item-text">CA Diffusions</span>
+            </a>
+        <a href="${pageContext.request.contextPath}/societe" class="menu-item">
+            <span class="menu-item-icon">🏢</span>
+            <span class="menu-item-text">Sociétés</span>
         </a>
     </div>
 </div>
