@@ -1,8 +1,3 @@
-// ============================================
-// Database: compagnie
-// DBML – Compatible PostgreSQL 15 / 16
-// ============================================
-
 Enum statut_reservation_enum {
   EN_ATTENTE
   CONFIRMEE
@@ -24,223 +19,173 @@ Enum statut_paiement_enum {
 }
 
 Table status_vol {
-  id int [pk, increment]
-  libelle varchar [unique, not null]
+  id int [pk]
+  libelle varchar
   description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table classe_siege {
-  id int [pk, increment]
-  libelle varchar [unique, not null]
+  id int [pk]
+  libelle varchar
   description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table type_client {
-  id int [pk, increment]
-  libelle varchar [unique, not null]
+  id int [pk]
+  libelle varchar
   description text
   mode_calcul varchar
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table role_equipage {
-  id int [pk, increment]
-  libelle varchar [unique, not null]
+  id int [pk]
+  libelle varchar
   description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table model_avion {
-  id int [pk, increment]
-  designation varchar [unique, not null]
+  id int [pk]
+  designation varchar
   fabricant varchar
   capacite int
-  autonomie_km int
-  vitesse_km_h int
-  description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table etat_avion {
-  id int [pk, increment]
-  libelle varchar [unique, not null]
+  id int [pk]
+  libelle varchar
   description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table avion {
-  id int [pk, increment]
-  code_avion varchar [unique, not null]
+  id int [pk]
+  code_avion varchar
+  capacite_totale int
   model_avion_id int
   etat_avion_id int
-  capacite_totale int
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table siege {
-  id int [pk, increment]
+  id int [pk]
   numero_siege varchar
   classe_siege_id int
   avion_id int
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table equipage {
-  id int [pk, increment]
+  id int [pk]
   nom varchar
   prenom varchar
   role_id int
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table aeroport {
-  id int [pk, increment]
-  code_aeroport varchar [unique]
+  id int [pk]
+  code_aeroport varchar
   nom varchar
   ville varchar
   pays varchar
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table ligne_vol {
-  id int [pk, increment]
-  numero_vol varchar [unique]
+  id int [pk]
+  numero_vol varchar
   aeroport_depart_id int
   aeroport_arrivee_id int
   duree_estimee_minutes int
   distance_km int
-  description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table vol_opere {
-  id int [pk, increment]
+  id int [pk]
   ligne_vol_id int
   avion_id int
   date_heure_depart timestamp
   date_heure_arrivee timestamp
   status_id int
-  retard_minutes int
-  motif_annulation text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table prix_vol {
-  id int [pk, increment]
+  id int [pk]
   vol_opere_id int
   classe_siege_id int
   type_client_id int
   prix_base decimal
   pourcentage_base decimal
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table siege_vol {
-  id int [pk, increment]
+  id int [pk]
   vol_opere_id int
   siege_id int
   statut varchar
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table vol_opere_equipage {
-  id int [pk, increment]
+  id int [pk]
   vol_opere_id int
   equipage_id int
-  created_at timestamp
 }
 
 Table client {
-  id int [pk, increment]
+  id int [pk]
   nom varchar
   prenom varchar
-  email varchar [unique]
+  email varchar
   telephone varchar
   date_naissance date
   adresse text
   type_client_id int
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table reservation {
-  id int [pk, increment]
+  id int [pk]
   client_id int
   vol_opere_id int
-  date_reservation timestamp
   statut statut_reservation_enum
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table billet {
-  id int [pk, increment]
+  id int [pk]
   reservation_id int
   siege_vol_id int
   prix decimal
   statut statut_billet_enum
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table methode_paiement {
-  id int [pk, increment]
-  libelle varchar [unique]
+  id int [pk]
+  libelle varchar
   description text
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table paiement {
-  id int [pk, increment]
+  id int [pk]
   reservation_id int
   montant decimal
-  date_paiement timestamp
   statut statut_paiement_enum
-  created_at timestamp
-  updated_at timestamp
 }
 
 Table paiement_methode {
-  id int [pk, increment]
+  id int [pk]
   paiement_id int
   methode_paiement_id int
   montant decimal
-  created_at timestamp
 }
 
 Table maintenance_avion {
-  id int [pk, increment]
+  id int [pk]
   avion_id int
   date_debut timestamp
   date_fin timestamp
-  description text
-  created_at timestamp
 }
 
 Table societe {
-  id int [pk, increment]
+  id int [pk]
   nom varchar
 }
 
 Table diffusion {
-  id int [pk, increment]
+  id int [pk]
   idSociete int
   idVolOpere int
   nombre int
@@ -248,30 +193,25 @@ Table diffusion {
 }
 
 Table prixDiffusion {
-  id int [pk, increment]
+  id int [pk]
   idSociete int
   valeur decimal
   datePrixDiff timestamp
 }
 
 Table paiementDiff {
-  id int [pk, increment]
+  id int [pk]
   idDiffusion int
   montant decimal
   datePaiement timestamp
 }
 
 Table paiement_diff_methode {
-  id int [pk, increment]
+  id int [pk]
   paiement_diff_id int
   methode_paiement_id int
   montant decimal
-  created_at timestamp
 }
-
-// =====================
-// RELATIONS
-// =====================
 
 Ref: avion.model_avion_id > model_avion.id
 Ref: avion.etat_avion_id > etat_avion.id
@@ -307,6 +247,7 @@ Ref: billet.reservation_id > reservation.id
 Ref: billet.siege_vol_id > siege_vol.id
 
 Ref: paiement.reservation_id > reservation.id
+
 Ref: paiement_methode.paiement_id > paiement.id
 Ref: paiement_methode.methode_paiement_id > methode_paiement.id
 
@@ -318,5 +259,6 @@ Ref: diffusion.idVolOpere > vol_opere.id
 Ref: prixDiffusion.idSociete > societe.id
 
 Ref: paiementDiff.idDiffusion > diffusion.id
+
 Ref: paiement_diff_methode.paiement_diff_id > paiementDiff.id
 Ref: paiement_diff_methode.methode_paiement_id > methode_paiement.id

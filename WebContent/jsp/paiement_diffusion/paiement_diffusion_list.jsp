@@ -14,6 +14,24 @@
             <h1>💸 Paiements Diffusions</h1>
             <a href="${pageContext.request.contextPath}/paiement-diffusion/new" class="btn btn-success">+ Nouveau paiement diffusion</a>
         </div>
+        <div class="filter-box" style="margin-bottom:20px;">
+            <form method="get" action="${pageContext.request.contextPath}/paiement-diffusion">
+                <label for="societe">Société :</label>
+                <select name="societeId" id="societe">
+                    <option value="">-- Toutes --</option>
+                    <% List<model.Societe> societes = (List<model.Societe>) request.getAttribute("societes");
+                       String selectedSociete = request.getParameter("societeId");
+                       if (societes != null) for (model.Societe s : societes) { %>
+                        <option value="<%= s.getId() %>" <%= (selectedSociete != null && selectedSociete.equals(String.valueOf(s.getId()))) ? "selected" : "" %>><%= s.getNom() %></option>
+                    <% } %>
+                </select>
+                <label for="dateDebut">Date début :</label>
+                <input type="date" name="dateDebut" id="dateDebut" value="<%= request.getParameter("dateDebut") != null ? request.getParameter("dateDebut") : "" %>" />
+                <label for="dateFin">Date fin :</label>
+                <input type="date" name="dateFin" id="dateFin" value="<%= request.getParameter("dateFin") != null ? request.getParameter("dateFin") : "" %>" />
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+            </form>
+        </div>
         <div class="result-box">
             <table class="table table-striped">
                 <thead>
@@ -26,7 +44,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                <% List<Map<String, Object>> paiements = (List<Map<String, Object>>) request.getAttribute("paiements");
+                <% 
+                   List<Map<String, Object>> paiements = (List<Map<String, Object>>) request.getAttribute("paiements");
+                   Double sommePayee = (Double) request.getAttribute("sommePayee");
+                   Double sommeDue = (Double) request.getAttribute("sommeDue");
                    if (paiements != null && !paiements.isEmpty()) {
                        for (Map<String, Object> p : paiements) { %>
                     <tr>
@@ -42,6 +63,14 @@
                 <% } %>
                 </tbody>
             </table>
+            <% if (selectedSociete != null && !selectedSociete.isEmpty()) { %>
+            <div style="margin-top:20px; font-weight:bold;">
+                <span>Total payé par la société : </span>
+                <%= String.format("%.2f", sommePayee != null ? sommePayee : 0.0) + " €" %><br/>
+                <span>Total dû par la société : </span>
+                <%= String.format("%.2f", sommeDue != null ? sommeDue : 0.0) + " €" %>
+            </div>
+            <% } %>
         </div>
     </div>
 </body>

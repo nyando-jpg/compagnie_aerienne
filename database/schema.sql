@@ -32,6 +32,7 @@ DROP TABLE IF EXISTS diffusion CASCADE;
 DROP TABLE IF EXISTS prixdiffusion CASCADE; 
 DROP TABLE IF EXISTS paiementdiff CASCADE;
 DROP TABLE IF EXISTS societe CASCADE;
+DROP TABLE IF EXISTS paiement_diff_methode CASCADE;
 
 DROP TYPE IF EXISTS statut_reservation_enum CASCADE;
 DROP TYPE IF EXISTS statut_billet_enum CASCADE;
@@ -361,4 +362,18 @@ CREATE TABLE paiement_diff_methode (
     FOREIGN KEY (paiement_diff_id) REFERENCES paiementDiff(id) ON DELETE CASCADE,
     FOREIGN KEY (methode_paiement_id) REFERENCES methode_paiement(id) ON DELETE RESTRICT,
     UNIQUE (paiement_diff_id, methode_paiement_id)
+);
+
+CREATE TABLE extra (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nom VARCHAR(100),
+    prix DECIMAL(10, 2)
+);
+
+CREATE TABLE vente_extra (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    idExtra int,
+    idVolOpere int,
+    nombre int,
+    FOREIGN KEY(idExtra) REFERENCES extra(id) ON DELETE CASCADE
 );

@@ -115,13 +115,13 @@
             <span class="menu-item-icon">💵</span>
             <span class="menu-item-text">Paiements</span>
         </a>
-        <a href="${pageContext.request.contextPath}/paiement-diffusion" class="menu-item">
-            <span class="menu-item-icon">💸</span>
-            <span class="menu-item-text">Paiements diffusions</span>
-        </a>
         <a href="${pageContext.request.contextPath}/methode-paiement" class="menu-item">
             <span class="menu-item-icon">💳</span>
             <span class="menu-item-text">Méthodes de paiement</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/paiement-diffusion" class="menu-item">
+            <span class="menu-item-icon">📡</span>
+            <span class="menu-item-text">Paiements diffusion</span>
         </a>
         <a href="${pageContext.request.contextPath}/chiffre-affaire" class="menu-item">
             <span class="menu-item-icon">💰</span>
@@ -138,6 +138,10 @@
         <a href="${pageContext.request.contextPath}/societe" class="menu-item">
             <span class="menu-item-icon">🏢</span>
             <span class="menu-item-text">Sociétés</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/ca_total" class="menu-item">
+            <span class="menu-item-icon">💵</span>
+            <span class="menu-item-text">Chiffre d'affaires Total</span>
         </a>
     </div>
 </div>

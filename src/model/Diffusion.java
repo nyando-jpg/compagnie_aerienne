@@ -1,12 +1,12 @@
 package model;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Diffusion {
     int id;
     int idSociete;
     int idVolOpere;
-    Date date;
+    Timestamp date;
     int nombre;
 
     public int getId() {
@@ -25,11 +25,11 @@ public class Diffusion {
         this.idSociete = idSociete;
     }
 
-    public Date getDate() {
+    public Timestamp getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(Timestamp date) {
         this.date = date;
     }
 

@@ -214,6 +214,25 @@
         <servlet-name>SocieteServlet</servlet-name>
         <url-pattern>/societe</url-pattern>
     </servlet-mapping>
+     <!-- CA Total Servlet -->
+    <servlet>
+        <servlet-name>CATotalServlet</servlet-name>
+        <servlet-class>controller.CATotalServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CATotalServlet</servlet-name>
+        <url-pattern>/ca_total</url-pattern>
+    </servlet-mapping>
+    
+
+    <servlet>
+        <servlet-name>FactureServlet</servlet-name>
+        <servlet-class>controller.FactureServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FactureServlet</servlet-name>
+        <url-pattern>/facture</url-pattern>
+    </servlet-mapping>
     
     <!-- Session Config -->
     <session-config>

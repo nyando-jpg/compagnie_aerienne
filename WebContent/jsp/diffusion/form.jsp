@@ -55,7 +55,7 @@
                 %>
                 </select>
             </label>
-            <label>Date: <input type="date" name="date" value="<%= d.getDate() != null ? d.getDate().toString() : "" %>"/></label>
+            <label>Date: <input type="datetime-local" name="date" value="<%= d.getDate() != null ? d.getDate().toString() : "" %>"/></label>
             <label>Nombre: <input type="number" name="nombre" value="<%= d.getNombre() %>"/></label>
             <div></div>
             <div>

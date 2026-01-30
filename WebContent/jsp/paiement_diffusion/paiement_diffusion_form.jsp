@@ -10,21 +10,28 @@
 <body>
     <%@ include file="/jsp/common/sidebar.jsp" %>
     <div class="main-content">
-        <h1>Ajouter un paiement diffusion</h1>
+            <% String error = (String) request.getAttribute("error"); if (error != null && !error.isEmpty()) { %>
+            <div class="message error"><%= error %></div>
+            <% } %>
+        <h1>Ajouter un paiement diffusion (par mois et entreprise)</h1>
         <form action="${pageContext.request.contextPath}/paiement-diffusion/create" method="post" class="form">
             <div class="form-group">
-                <label for="idDiffusion">Diffusion</label>
-                <select name="idDiffusion" id="idDiffusion" required>
-                    <% List<Map<String, Object>> diffusions = (List<Map<String, Object>>) request.getAttribute("diffusions");
-                       if (diffusions != null) {
-                           for (Map<String, Object> d : diffusions) { %>
-                        <option value="<%= d.get("id") %>"><%= d.get("info") %></option>
+                <label for="idSociete">Entreprise</label>
+                <select name="idSociete" id="idSociete" required>
+                    <% List<model.Societe> societes = (List<model.Societe>) request.getAttribute("societes");
+                       if (societes != null) {
+                           for (model.Societe s : societes) { %>
+                        <option value="<%= s.getId() %>"><%= s.getNom() %></option>
                     <%   }
                        } %>
                 </select>
             </div>
             <div class="form-group">
-                <label for="montant">Montant (€)</label>
+                <label for="mois">Mois</label>
+                <input type="month" name="mois" id="mois" required>
+            </div>
+            <div class="form-group">
+                <label for="montant">Montant total (€)</label>
                 <input type="number" step="0.01" name="montant" id="montant" required>
             </div>
             <div class="form-group">

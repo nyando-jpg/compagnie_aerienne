@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 public class DiffusionServlet extends HttpServlet {
@@ -104,9 +104,17 @@ public class DiffusionServlet extends HttpServlet {
                 formError = "ID Vol Opéré invalide";
             }
             try {
-                d.setDate(Date.valueOf(dateStr));
+                // Handle datetime-local input (e.g., 2026-01-23T15:30)
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    String dateTimeStr = dateStr.replace('T', ' ');
+                    if (dateTimeStr.length() == 16)
+                        dateTimeStr += ":00"; // add seconds if missing
+                    d.setDate(Timestamp.valueOf(dateTimeStr));
+                } else {
+                    d.setDate(null);
+                }
             } catch (Exception ex) {
-                formError = "Date invalide (format attendu: yyyy-MM-dd)";
+                formError = "Date invalide (format attendu: yyyy-MM-ddTHH:mm)";
             }
             try {
                 d.setNombre(Integer.parseInt(nombreStr));

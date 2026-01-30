@@ -22,7 +22,7 @@ public class DiffusionDAO {
                 d.setIdSociete(res.getInt("idSociete"));
                 java.sql.Timestamp ts = res.getTimestamp("dateDiff");
                 if (ts != null) {
-                    d.setDate(new java.sql.Date(ts.getTime()));
+                    d.setDate(ts);
                 }
                 d.setIdVolOpere(res.getInt("idVolOpere"));
                 // nombre may be null for older rows; default to 0
@@ -51,7 +51,7 @@ public class DiffusionDAO {
                 d.setIdSociete(res.getInt("idSociete"));
                 java.sql.Timestamp ts = res.getTimestamp("dateDiff");
                 if (ts != null)
-                    d.setDate(new java.sql.Date(ts.getTime()));
+                    d.setDate(ts);
                 d.setIdVolOpere(res.getInt("idVolOpere"));
                 try {
                     d.setNombre(res.getInt("nombre"));
@@ -73,7 +73,7 @@ public class DiffusionDAO {
             pstmt.setInt(1, d.getIdSociete());
             pstmt.setInt(2, d.getIdVolOpere());
             if (d.getDate() != null) {
-                pstmt.setTimestamp(3, new java.sql.Timestamp(d.getDate().getTime()));
+                pstmt.setTimestamp(3, d.getDate());
             } else {
                 pstmt.setNull(3, java.sql.Types.TIMESTAMP);
             }
@@ -92,7 +92,7 @@ public class DiffusionDAO {
             pstmt.setInt(1, d.getIdSociete());
             pstmt.setInt(2, d.getIdVolOpere());
             if (d.getDate() != null) {
-                pstmt.setTimestamp(3, new java.sql.Timestamp(d.getDate().getTime()));
+                pstmt.setTimestamp(3, d.getDate());
             } else {
                 pstmt.setNull(3, java.sql.Types.TIMESTAMP);
             }

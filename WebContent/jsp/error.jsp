@@ -79,6 +79,7 @@
         <div class="error-code">
             <% 
                 Integer statusCode = (Integer) request.getAttribute("jakarta.servlet.error.status_code");
+                if (statusCode == null) statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
                 if (statusCode != null) {
                     out.print("Error Code: " + statusCode);
                 }
@@ -87,20 +88,26 @@
         <p>
             We're sorry, but the page you're looking for couldn't be found or an error occurred while processing your request.
         </p>
+        <%-- Affiche l'exception et la stacktrace si présentes --%>
         <%
-            String err = (String) request.getAttribute("errorMessage");
-            String stack = (String) request.getAttribute("stackTrace");
-            if (err != null) {
+            Throwable exception = (Throwable) request.getAttribute("jakarta.servlet.error.exception");
+            if (exception == null) exception = (Throwable) request.getAttribute("javax.servlet.error.exception");
+            if (exception != null) {
         %>
-        <div style="text-align:left; margin-top:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; max-height:200px; overflow:auto;">
-            <strong>Erreur:</strong>
-            <pre style="white-space:pre-wrap;"><%= err %></pre>
-            <strong>Stacktrace:</strong>
-            <pre style="white-space:pre-wrap; font-size:12px;"><%= stack %></pre>
+        <div style="text-align:left; margin-top:20px; padding:10px; background:#f9f9f9; border:1px solid #eee; max-height:300px; overflow:auto;">
+            <strong>Exception :</strong>
+            <pre style="white-space:pre-wrap;"><%= exception.getClass().getName() + ": " + exception.getMessage() %></pre>
+            <strong>Stacktrace :</strong>
+            <pre style="white-space:pre-wrap; font-size:12px;">
+<%
+    java.io.StringWriter sw = new java.io.StringWriter();
+    java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+    exception.printStackTrace(pw);
+    out.print(sw.toString());
+%>
+            </pre>
         </div>
-        <%
-            }
-        %>
+        <% } %>
         <a href="${pageContext.request.contextPath}/home" class="btn">Go to Home Page</a>
     </div>
 </body>

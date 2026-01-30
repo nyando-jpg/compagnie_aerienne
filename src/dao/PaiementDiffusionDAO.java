@@ -11,6 +11,100 @@ import java.util.Map;
 import util.DatabaseConnection;
 
 public class PaiementDiffusionDAO {
+
+    /**
+     * Insère un paiement pour chaque diffusion d'une société sur un mois donné.
+     * 
+     * @param idSociete         l'id de la société
+     * @param moisStr           le mois au format yyyy-MM
+     * @param montantTotal      le montant total à répartir
+     * @param datePaiement      la date du paiement
+     * @param idMethodePaiement la méthode de paiement
+     * @return true si au moins un paiement a été inséré
+     */
+    public static boolean insertPaiementParMoisSociete(int idSociete, String moisStr, double montantTotal,
+            java.sql.Timestamp datePaiement, int idMethodePaiement, StringBuilder errorBuilder) {
+        class DiffusionMontant {
+            int idDiffusion;
+            double montantDu;
+
+            DiffusionMontant(int id, double montant) {
+                this.idDiffusion = id;
+                this.montantDu = montant;
+            }
+        }
+        List<DiffusionMontant> diffusions = new ArrayList<>();
+        String sql = "SELECT d.id, pd.valeur * d.nombre AS montantDu FROM diffusion d JOIN prixDiffusion pd ON pd.idSociete = d.idSociete WHERE d.idSociete = ? AND to_char(d.dateDiff, 'YYYY-MM') = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idSociete);
+            ps.setString(2, moisStr);
+            ResultSet rs = ps.executeQuery();
+            double montantTotalDu = 0;
+            while (rs.next()) {
+                int idDiff = rs.getInt("id");
+                double montantDu = rs.getDouble("montantDu");
+                diffusions.add(new DiffusionMontant(idDiff, montantDu));
+                montantTotalDu += montantDu;
+            }
+            System.out.println("[PaiementDiffusionDAO] Diffusions trouvées pour societe=" + idSociete + ", mois="
+                    + moisStr + " : " + diffusions.size() + " => " + diffusions);
+            if (diffusions.isEmpty()) {
+                if (errorBuilder != null)
+                    errorBuilder.append("Aucune diffusion trouvée pour cette société et ce mois.\n");
+                return false;
+            }
+            if (diffusions.size() == 1 && errorBuilder != null) {
+                errorBuilder.append("Attention : une seule diffusion trouvée pour ce mois/société. IDs : ");
+                for (DiffusionMontant d : diffusions)
+                    errorBuilder.append(d.idDiffusion).append(" ");
+                errorBuilder.append("\n");
+            }
+            if (montantTotalDu <= 0) {
+                if (errorBuilder != null)
+                    errorBuilder.append("Montant total dû nul ou négatif.\n");
+                return false;
+            }
+            double pourcentage = montantTotal / montantTotalDu;
+            boolean atLeastOne = false;
+            for (DiffusionMontant d : diffusions) {
+                double montantRegle = d.montantDu * pourcentage;
+                try {
+                    String sqlInsert = "INSERT INTO paiementDiff(idDiffusion, montant, datePaiement) VALUES (?, ?, ?) RETURNING id";
+                    try (PreparedStatement psInsert = conn.prepareStatement(sqlInsert)) {
+                        psInsert.setInt(1, d.idDiffusion);
+                        psInsert.setDouble(2, montantRegle);
+                        psInsert.setTimestamp(3, datePaiement);
+                        ResultSet rsInsert = psInsert.executeQuery();
+                        if (rsInsert.next()) {
+                            int paiementDiffId = rsInsert.getInt("id");
+                            String sql2 = "INSERT INTO paiement_diff_methode(paiement_diff_id, methode_paiement_id, montant) VALUES (?, ?, ?)";
+                            try (PreparedStatement ps2 = conn.prepareStatement(sql2)) {
+                                ps2.setInt(1, paiementDiffId);
+                                ps2.setInt(2, idMethodePaiement);
+                                ps2.setDouble(3, montantRegle);
+                                int affected2 = ps2.executeUpdate();
+                                if (affected2 > 0)
+                                    atLeastOne = true;
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    if (errorBuilder != null)
+                        errorBuilder.append("Erreur pour diffusion ").append(d.idDiffusion).append(" : ")
+                                .append(ex.getMessage()).append("\n");
+                }
+            }
+            return atLeastOne;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (errorBuilder != null)
+                errorBuilder.append(e.getMessage()).append("\n");
+        }
+        return false;
+    }
+
     public static List<Map<String, Object>> getFiltered(Integer volOpereId, Integer avionId, Integer societeId,
             java.sql.Date dateDebut, java.sql.Date dateFin) {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -168,5 +262,24 @@ public class PaiementDiffusionDAO {
             e.printStackTrace();
         }
         return result;
+    }
+
+    /**
+     * Calcule le montant total dû pour toutes les diffusions d'une société (somme
+     * des prix * nombre).
+     */
+    public static Double getTotalDuPourSociete(int societeId) {
+        String sql = "SELECT SUM(pd.valeur * d.nombre) AS totalDu FROM diffusion d JOIN prixDiffusion pd ON pd.idSociete = d.idSociete WHERE d.idSociete = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, societeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("totalDu");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
